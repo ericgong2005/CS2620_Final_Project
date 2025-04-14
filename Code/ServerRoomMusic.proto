@@ -1,0 +1,52 @@
+// Compile via python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. ServerRoomMusic.proto 
+
+syntax = "proto3";
+
+package ServerRoomMusic;
+
+// Kill Room
+message KillRoomRequest {
+
+}
+message KillRoomResponse {
+
+}
+
+// Current State
+message CurrentStateRequest {
+}
+message CurrentStateResponse {
+}
+
+// Add Song
+message AddSongRequest {
+}
+message AddSongResponse {
+}
+
+// Delete Song
+message DeleteSongRequest {
+}
+message DeleteSongResponse {
+}
+
+// Pause Song
+message PauseSongRequest {
+}
+message PauseSongResponse {
+}
+
+// Move Position
+message MovePositionRequest {
+}
+message MovePositionResponse {
+}
+
+service ServerRoomMusic {
+    rpc KillRoom(KillRoomRequest) returns (KillRoomResponse);
+    rpc CurrentState(CurrentStateRequest) returns (CurrentStateResponse);
+    rpc AddSong(AddSongRequest) returns (AddSongResponse);
+    rpc DeleteSong(DeleteSongRequest) returns (DeleteSongResponse);
+    rpc PauseSong(PauseSongRequest) returns (PauseSongResponse);
+    rpc MovePosition(MovePositionRequest) returns (MovePositionResponse);
+}

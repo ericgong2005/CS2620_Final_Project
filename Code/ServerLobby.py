@@ -6,8 +6,8 @@ import ServerLobby_pb2_grpc
 
 class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
     def __init__(self):
-        users = {} # Contains username to (room, last update time)
-        rooms = {} # Contains room to (count, last update time)
+        self.users = {} # Contains username to (room, last update time)
+        self.rooms = {} # Contains room to (count, last update time)
 
     # Join the lobby
     def JoinLobby(self, request, context):

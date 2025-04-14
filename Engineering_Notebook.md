@@ -4,6 +4,12 @@ Time synchronization requirements:
  - NTP-like system (network time protocol) seems like a good choice
     - The client requests a time sync and records the amount of time needed for a response, this determines the delay
     - The client gets the server time on response and calculates the offset from its own clock to know the true server time
+ - Process
+    - The client sends request
+    - The server responds with its actual time
+    - delay = half of response time
+    - offset = returned server time - (client time + delay)
+
 
 Server setup:
  - One central process that forks off children that serve as the jam rooms
@@ -29,7 +35,7 @@ GRPC specs:
     - StartRoom: Starts a new room, still needs a separate joinroom request
  - ServerRoom:
     - RoomTime:
-        - TimeSync
+        - TimeSync: client passes its clock time, calculated offset and calculated delay (-1 if never calculated yet)
     - RoomMusic:
         - KillRoom
         - CurrentState
