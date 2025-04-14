@@ -1,3 +1,7 @@
+Todo:
+ - Organize into subdirectories
+ - Add upload music to serverlobby, and corresponding getmusiclist related commands
+
 Time synchronization requirements:
  - Will need accurate shared time
  - Won't need very strict ordering of evernts, we can introduce orchestrated delays to make things work on the client end
@@ -16,6 +20,7 @@ Server setup:
  - Each jam room has its own gRPC handler
  - central process has gRPC handler that allows for creation of new rooms and joining exisiting rooms
  - each child should have a dedicated time-sync gRPC (less chance of backlogs) and one for the rest of the music related things
+ - ServerLobby can write to music files, ServerRoom can only read: users uploading music in a room will have the room pass the file to the lobby. This deals with concurrency issues.
 
 Considerations:
  - Will need to determine how many rounds of syncing are necessary for accuracy. If it takes a long time, might want to orchestrate some sort of delay on the user end before the music starts (ie: force everyone to pick a song and then vote on a song, with minimum 10s delay for each)
