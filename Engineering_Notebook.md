@@ -35,7 +35,7 @@ GRPC specs:
     - StartRoom: Starts a new room, still needs a separate joinroom request
  - ServerRoom:
     - RoomTime:
-        - TimeSync: client passes its clock time, calculated offset and calculated delay (-1 if never calculated yet)
+        - TimeSync: server returns time, client calculates offset and delay
     - RoomMusic:
         - KillRoom
         - CurrentState
