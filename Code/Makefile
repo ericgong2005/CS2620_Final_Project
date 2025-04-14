@@ -33,4 +33,4 @@ ServerRoom:
 
 # Ensure arguments are not targets
 %:
-	@:
+	@echo "Unrecognised Command"

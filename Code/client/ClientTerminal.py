@@ -3,6 +3,9 @@ import grpc
 import sys
 
 from Client.ClientGRPC import Client_pb2, Client_pb2_grpc
+from Server.ServerLobbyGRPC import ServerLobby_pb2, ServerLobby_pb2_grpc
+from Server.ServerRoomGRPC import (ServerRoomMusic_pb2, ServerRoomMusic_pb2_grpc, 
+                            ServerRoomTime_pb2, ServerRoomTime_pb2_grpc)
 
 class ClientServicer(Client_pb2_grpc.ClientServicer):
     def __init__(self):
