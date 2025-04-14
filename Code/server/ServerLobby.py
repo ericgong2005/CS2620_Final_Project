@@ -4,10 +4,12 @@ import sys
 import time
 import multiprocessing as mp
 
-from server_grpc import ServerLobby_pb2
-from server_grpc import ServerLobby_pb2_grpc
+from Client.ClientGRPC import Client_pb2, Client_pb2_grpc
+from Server.ServerLobbyGRPC import ServerLobby_pb2, ServerLobby_pb2_grpc
+from Server.ServerRoomGRPC import (ServerRoomMusic_pb2, ServerRoomMusic_pb2_grpc, 
+                            ServerRoomTime_pb2, ServerRoomTime_pb2_grpc)
 
-from ServerRoom import startServerRoom
+from Server.ServerRoom import startServerRoom
 
 class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
     def __init__(self):

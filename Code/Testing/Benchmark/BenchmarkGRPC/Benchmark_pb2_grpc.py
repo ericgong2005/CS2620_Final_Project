@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import ServerRoomTime_pb2 as ServerRoomTime__pb2
+from Testing.Benchmark.BenchmarkGRPC import Benchmark_pb2 as Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2
 
 GRPC_GENERATED_VERSION = '1.70.0'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in ServerRoomTime_pb2_grpc.py depends on'
+        + f' but the generated code in Testing/Benchmark/BenchmarkGRPC/Benchmark_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -36,8 +36,8 @@ class ServerRoomTimeStub(object):
         """
         self.TimeSync = channel.unary_unary(
                 '/ServerRoomTime.ServerRoomTime/TimeSync',
-                request_serializer=ServerRoomTime__pb2.TimeSyncRequest.SerializeToString,
-                response_deserializer=ServerRoomTime__pb2.TimeSyncResponse.FromString,
+                request_serializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.TimeSyncRequest.SerializeToString,
+                response_deserializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.TimeSyncResponse.FromString,
                 _registered_method=True)
 
 
@@ -55,8 +55,8 @@ def add_ServerRoomTimeServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'TimeSync': grpc.unary_unary_rpc_method_handler(
                     servicer.TimeSync,
-                    request_deserializer=ServerRoomTime__pb2.TimeSyncRequest.FromString,
-                    response_serializer=ServerRoomTime__pb2.TimeSyncResponse.SerializeToString,
+                    request_deserializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.TimeSyncRequest.FromString,
+                    response_serializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.TimeSyncResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -84,8 +84,8 @@ class ServerRoomTime(object):
             request,
             target,
             '/ServerRoomTime.ServerRoomTime/TimeSync',
-            ServerRoomTime__pb2.TimeSyncRequest.SerializeToString,
-            ServerRoomTime__pb2.TimeSyncResponse.FromString,
+            Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.TimeSyncRequest.SerializeToString,
+            Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.TimeSyncResponse.FromString,
             options,
             channel_credentials,
             insecure,

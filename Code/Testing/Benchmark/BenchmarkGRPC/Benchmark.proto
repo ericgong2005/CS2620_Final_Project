@@ -1,0 +1,15 @@
+// Compile via python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. ServerRoomTime.proto 
+
+syntax = "proto3";
+
+package ServerRoomTime;
+
+// Time Sync
+message TimeSyncRequest {}
+message TimeSyncResponse {
+    int64 time = 1;
+}
+
+service ServerRoomTime {
+    rpc TimeSync(TimeSyncRequest) returns (TimeSyncResponse);
+}

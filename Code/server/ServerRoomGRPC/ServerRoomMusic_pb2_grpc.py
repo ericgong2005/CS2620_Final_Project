@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import ServerRoomMusic_pb2 as ServerRoomMusic__pb2
+from Server.ServerRoomGRPC import ServerRoomMusic_pb2 as Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2
 
 GRPC_GENERATED_VERSION = '1.70.0'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in ServerRoomMusic_pb2_grpc.py depends on'
+        + f' but the generated code in Server/ServerRoomGRPC/ServerRoomMusic_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -36,33 +36,33 @@ class ServerRoomMusicStub(object):
         """
         self.KillRoom = channel.unary_unary(
                 '/ServerRoomMusic.ServerRoomMusic/KillRoom',
-                request_serializer=ServerRoomMusic__pb2.KillRoomRequest.SerializeToString,
-                response_deserializer=ServerRoomMusic__pb2.KillRoomResponse.FromString,
+                request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.KillRoomRequest.SerializeToString,
+                response_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.KillRoomResponse.FromString,
                 _registered_method=True)
         self.CurrentState = channel.unary_unary(
                 '/ServerRoomMusic.ServerRoomMusic/CurrentState',
-                request_serializer=ServerRoomMusic__pb2.CurrentStateRequest.SerializeToString,
-                response_deserializer=ServerRoomMusic__pb2.CurrentStateResponse.FromString,
+                request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.CurrentStateRequest.SerializeToString,
+                response_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.CurrentStateResponse.FromString,
                 _registered_method=True)
         self.AddSong = channel.unary_unary(
                 '/ServerRoomMusic.ServerRoomMusic/AddSong',
-                request_serializer=ServerRoomMusic__pb2.AddSongRequest.SerializeToString,
-                response_deserializer=ServerRoomMusic__pb2.AddSongResponse.FromString,
+                request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.AddSongRequest.SerializeToString,
+                response_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.AddSongResponse.FromString,
                 _registered_method=True)
         self.DeleteSong = channel.unary_unary(
                 '/ServerRoomMusic.ServerRoomMusic/DeleteSong',
-                request_serializer=ServerRoomMusic__pb2.DeleteSongRequest.SerializeToString,
-                response_deserializer=ServerRoomMusic__pb2.DeleteSongResponse.FromString,
+                request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.DeleteSongRequest.SerializeToString,
+                response_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.DeleteSongResponse.FromString,
                 _registered_method=True)
         self.PauseSong = channel.unary_unary(
                 '/ServerRoomMusic.ServerRoomMusic/PauseSong',
-                request_serializer=ServerRoomMusic__pb2.PauseSongRequest.SerializeToString,
-                response_deserializer=ServerRoomMusic__pb2.PauseSongResponse.FromString,
+                request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.PauseSongRequest.SerializeToString,
+                response_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.PauseSongResponse.FromString,
                 _registered_method=True)
         self.MovePosition = channel.unary_unary(
                 '/ServerRoomMusic.ServerRoomMusic/MovePosition',
-                request_serializer=ServerRoomMusic__pb2.MovePositionRequest.SerializeToString,
-                response_deserializer=ServerRoomMusic__pb2.MovePositionResponse.FromString,
+                request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.MovePositionRequest.SerializeToString,
+                response_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.MovePositionResponse.FromString,
                 _registered_method=True)
 
 
@@ -110,33 +110,33 @@ def add_ServerRoomMusicServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'KillRoom': grpc.unary_unary_rpc_method_handler(
                     servicer.KillRoom,
-                    request_deserializer=ServerRoomMusic__pb2.KillRoomRequest.FromString,
-                    response_serializer=ServerRoomMusic__pb2.KillRoomResponse.SerializeToString,
+                    request_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.KillRoomRequest.FromString,
+                    response_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.KillRoomResponse.SerializeToString,
             ),
             'CurrentState': grpc.unary_unary_rpc_method_handler(
                     servicer.CurrentState,
-                    request_deserializer=ServerRoomMusic__pb2.CurrentStateRequest.FromString,
-                    response_serializer=ServerRoomMusic__pb2.CurrentStateResponse.SerializeToString,
+                    request_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.CurrentStateRequest.FromString,
+                    response_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.CurrentStateResponse.SerializeToString,
             ),
             'AddSong': grpc.unary_unary_rpc_method_handler(
                     servicer.AddSong,
-                    request_deserializer=ServerRoomMusic__pb2.AddSongRequest.FromString,
-                    response_serializer=ServerRoomMusic__pb2.AddSongResponse.SerializeToString,
+                    request_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.AddSongRequest.FromString,
+                    response_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.AddSongResponse.SerializeToString,
             ),
             'DeleteSong': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteSong,
-                    request_deserializer=ServerRoomMusic__pb2.DeleteSongRequest.FromString,
-                    response_serializer=ServerRoomMusic__pb2.DeleteSongResponse.SerializeToString,
+                    request_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.DeleteSongRequest.FromString,
+                    response_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.DeleteSongResponse.SerializeToString,
             ),
             'PauseSong': grpc.unary_unary_rpc_method_handler(
                     servicer.PauseSong,
-                    request_deserializer=ServerRoomMusic__pb2.PauseSongRequest.FromString,
-                    response_serializer=ServerRoomMusic__pb2.PauseSongResponse.SerializeToString,
+                    request_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.PauseSongRequest.FromString,
+                    response_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.PauseSongResponse.SerializeToString,
             ),
             'MovePosition': grpc.unary_unary_rpc_method_handler(
                     servicer.MovePosition,
-                    request_deserializer=ServerRoomMusic__pb2.MovePositionRequest.FromString,
-                    response_serializer=ServerRoomMusic__pb2.MovePositionResponse.SerializeToString,
+                    request_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.MovePositionRequest.FromString,
+                    response_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.MovePositionResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -164,8 +164,8 @@ class ServerRoomMusic(object):
             request,
             target,
             '/ServerRoomMusic.ServerRoomMusic/KillRoom',
-            ServerRoomMusic__pb2.KillRoomRequest.SerializeToString,
-            ServerRoomMusic__pb2.KillRoomResponse.FromString,
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.KillRoomRequest.SerializeToString,
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.KillRoomResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -191,8 +191,8 @@ class ServerRoomMusic(object):
             request,
             target,
             '/ServerRoomMusic.ServerRoomMusic/CurrentState',
-            ServerRoomMusic__pb2.CurrentStateRequest.SerializeToString,
-            ServerRoomMusic__pb2.CurrentStateResponse.FromString,
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.CurrentStateRequest.SerializeToString,
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.CurrentStateResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -218,8 +218,8 @@ class ServerRoomMusic(object):
             request,
             target,
             '/ServerRoomMusic.ServerRoomMusic/AddSong',
-            ServerRoomMusic__pb2.AddSongRequest.SerializeToString,
-            ServerRoomMusic__pb2.AddSongResponse.FromString,
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.AddSongRequest.SerializeToString,
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.AddSongResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -245,8 +245,8 @@ class ServerRoomMusic(object):
             request,
             target,
             '/ServerRoomMusic.ServerRoomMusic/DeleteSong',
-            ServerRoomMusic__pb2.DeleteSongRequest.SerializeToString,
-            ServerRoomMusic__pb2.DeleteSongResponse.FromString,
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.DeleteSongRequest.SerializeToString,
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.DeleteSongResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -272,8 +272,8 @@ class ServerRoomMusic(object):
             request,
             target,
             '/ServerRoomMusic.ServerRoomMusic/PauseSong',
-            ServerRoomMusic__pb2.PauseSongRequest.SerializeToString,
-            ServerRoomMusic__pb2.PauseSongResponse.FromString,
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.PauseSongRequest.SerializeToString,
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.PauseSongResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -299,8 +299,8 @@ class ServerRoomMusic(object):
             request,
             target,
             '/ServerRoomMusic.ServerRoomMusic/MovePosition',
-            ServerRoomMusic__pb2.MovePositionRequest.SerializeToString,
-            ServerRoomMusic__pb2.MovePositionResponse.FromString,
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.MovePositionRequest.SerializeToString,
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.MovePositionResponse.FromString,
             options,
             channel_credentials,
             insecure,
