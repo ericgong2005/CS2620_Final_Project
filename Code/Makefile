@@ -17,6 +17,7 @@ clean:
 	@echo "Removing gRPC generated files"
 	-find . -type f -name "*_pb2.py" -delete
 	-find . -type f -name "*_pb2_grpc.py" -delete
+	make grpc
 
 Server:
 	python -m Server.ServerLobby $(ARGS)
@@ -31,6 +32,5 @@ ServerRoom:
 	@echo "Note this should only be used for testing..."
 	python -m Server.ServerRoom $(ARGS)
 
-# Ensure arguments are not targets
 %:
 	@echo "Unrecognised Command"
