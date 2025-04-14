@@ -1,0 +1,43 @@
+// Compile via python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. Client.proto 
+
+syntax = "proto3";
+
+package Client;
+
+// Current State
+message CurrentStateRequest {
+}
+message CurrentStateResponse {
+}
+
+// Add Song
+message AddSongRequest {
+}
+message AddSongResponse {
+}
+
+// Delete Song
+message DeleteSongRequest {
+}
+message DeleteSongResponse {
+}
+
+// Pause Song
+message PauseSongRequest {
+}
+message PauseSongResponse {
+}
+
+// Move Position
+message MovePositionRequest {
+}
+message MovePositionResponse {
+}
+
+service Client {
+    rpc CurrentState(CurrentStateRequest) returns (CurrentStateResponse);
+    rpc AddSong(AddSongRequest) returns (AddSongResponse);
+    rpc DeleteSong(DeleteSongRequest) returns (DeleteSongResponse);
+    rpc PauseSong(PauseSongRequest) returns (PauseSongResponse);
+    rpc MovePosition(MovePositionRequest) returns (MovePositionResponse);
+}
