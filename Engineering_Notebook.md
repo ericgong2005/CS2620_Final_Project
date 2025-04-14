@@ -37,14 +37,14 @@ GRPC specs:
     - RoomTime:
         - TimeSync: server returns time, client calculates offset and delay
     - RoomMusic:
-        - KillRoom
-        - CurrentState
+        - KillRoom: allos the serverlobby to kill a room if there are no users or whatnot
+        - CurrentState: list of songs, point in current song, music file for current song, etc.
         - AddSong
         - DeleteSong
         - PauseSong
-        - MovePosition
+        - MovePosition: move to a different point in the song
  - Client:
-    - CurrentState
+    - CurrentState: use as a heartbeat, should return username and room/lobby
     - AddSong
     - DeleteSong
     - PauseSong
