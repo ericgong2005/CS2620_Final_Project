@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import Client_pb2 as Client__pb2
+from Server.ServerLobbyGRPC import ServerLobby_pb2 as Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2
 
 GRPC_GENERATED_VERSION = '1.70.0'
 GRPC_VERSION = grpc.__version__
@@ -18,14 +18,14 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in Client_pb2_grpc.py depends on'
+        + f' but the generated code in Server/ServerLobbyGRPC/ServerLobby_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
     )
 
 
-class ClientStub(object):
+class ServerLobbyStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -34,107 +34,107 @@ class ClientStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.CurrentState = channel.unary_unary(
-                '/Client.Client/CurrentState',
-                request_serializer=Client__pb2.CurrentStateRequest.SerializeToString,
-                response_deserializer=Client__pb2.CurrentStateResponse.FromString,
+        self.JoinLobby = channel.unary_unary(
+                '/ServerLobby.ServerLobby/JoinLobby',
+                request_serializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinLobbyRequest.SerializeToString,
+                response_deserializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinLobbyResponse.FromString,
                 _registered_method=True)
-        self.AddSong = channel.unary_unary(
-                '/Client.Client/AddSong',
-                request_serializer=Client__pb2.AddSongRequest.SerializeToString,
-                response_deserializer=Client__pb2.AddSongResponse.FromString,
+        self.GetRooms = channel.unary_unary(
+                '/ServerLobby.ServerLobby/GetRooms',
+                request_serializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.GetRoomsRequest.SerializeToString,
+                response_deserializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.GetRoomsResponse.FromString,
                 _registered_method=True)
-        self.DeleteSong = channel.unary_unary(
-                '/Client.Client/DeleteSong',
-                request_serializer=Client__pb2.DeleteSongRequest.SerializeToString,
-                response_deserializer=Client__pb2.DeleteSongResponse.FromString,
+        self.JoinRoom = channel.unary_unary(
+                '/ServerLobby.ServerLobby/JoinRoom',
+                request_serializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinRoomRequest.SerializeToString,
+                response_deserializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinRoomResponse.FromString,
                 _registered_method=True)
-        self.PauseSong = channel.unary_unary(
-                '/Client.Client/PauseSong',
-                request_serializer=Client__pb2.PauseSongRequest.SerializeToString,
-                response_deserializer=Client__pb2.PauseSongResponse.FromString,
+        self.LeaveRoom = channel.unary_unary(
+                '/ServerLobby.ServerLobby/LeaveRoom',
+                request_serializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.LeaveRoomRequest.SerializeToString,
+                response_deserializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.LeaveRoomResponse.FromString,
                 _registered_method=True)
-        self.MovePosition = channel.unary_unary(
-                '/Client.Client/MovePosition',
-                request_serializer=Client__pb2.MovePositionRequest.SerializeToString,
-                response_deserializer=Client__pb2.MovePositionResponse.FromString,
+        self.StartRoom = channel.unary_unary(
+                '/ServerLobby.ServerLobby/StartRoom',
+                request_serializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.StartRoomRequest.SerializeToString,
+                response_deserializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.StartRoomResponse.FromString,
                 _registered_method=True)
 
 
-class ClientServicer(object):
+class ServerLobbyServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def CurrentState(self, request, context):
+    def JoinLobby(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def AddSong(self, request, context):
+    def GetRooms(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def DeleteSong(self, request, context):
+    def JoinRoom(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def PauseSong(self, request, context):
+    def LeaveRoom(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def MovePosition(self, request, context):
+    def StartRoom(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_ClientServicer_to_server(servicer, server):
+def add_ServerLobbyServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'CurrentState': grpc.unary_unary_rpc_method_handler(
-                    servicer.CurrentState,
-                    request_deserializer=Client__pb2.CurrentStateRequest.FromString,
-                    response_serializer=Client__pb2.CurrentStateResponse.SerializeToString,
+            'JoinLobby': grpc.unary_unary_rpc_method_handler(
+                    servicer.JoinLobby,
+                    request_deserializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinLobbyRequest.FromString,
+                    response_serializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinLobbyResponse.SerializeToString,
             ),
-            'AddSong': grpc.unary_unary_rpc_method_handler(
-                    servicer.AddSong,
-                    request_deserializer=Client__pb2.AddSongRequest.FromString,
-                    response_serializer=Client__pb2.AddSongResponse.SerializeToString,
+            'GetRooms': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetRooms,
+                    request_deserializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.GetRoomsRequest.FromString,
+                    response_serializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.GetRoomsResponse.SerializeToString,
             ),
-            'DeleteSong': grpc.unary_unary_rpc_method_handler(
-                    servicer.DeleteSong,
-                    request_deserializer=Client__pb2.DeleteSongRequest.FromString,
-                    response_serializer=Client__pb2.DeleteSongResponse.SerializeToString,
+            'JoinRoom': grpc.unary_unary_rpc_method_handler(
+                    servicer.JoinRoom,
+                    request_deserializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinRoomRequest.FromString,
+                    response_serializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinRoomResponse.SerializeToString,
             ),
-            'PauseSong': grpc.unary_unary_rpc_method_handler(
-                    servicer.PauseSong,
-                    request_deserializer=Client__pb2.PauseSongRequest.FromString,
-                    response_serializer=Client__pb2.PauseSongResponse.SerializeToString,
+            'LeaveRoom': grpc.unary_unary_rpc_method_handler(
+                    servicer.LeaveRoom,
+                    request_deserializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.LeaveRoomRequest.FromString,
+                    response_serializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.LeaveRoomResponse.SerializeToString,
             ),
-            'MovePosition': grpc.unary_unary_rpc_method_handler(
-                    servicer.MovePosition,
-                    request_deserializer=Client__pb2.MovePositionRequest.FromString,
-                    response_serializer=Client__pb2.MovePositionResponse.SerializeToString,
+            'StartRoom': grpc.unary_unary_rpc_method_handler(
+                    servicer.StartRoom,
+                    request_deserializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.StartRoomRequest.FromString,
+                    response_serializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.StartRoomResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'Client.Client', rpc_method_handlers)
+            'ServerLobby.ServerLobby', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('Client.Client', rpc_method_handlers)
+    server.add_registered_method_handlers('ServerLobby.ServerLobby', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
-class Client(object):
+class ServerLobby(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def CurrentState(request,
+    def JoinLobby(request,
             target,
             options=(),
             channel_credentials=None,
@@ -147,9 +147,9 @@ class Client(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/Client.Client/CurrentState',
-            Client__pb2.CurrentStateRequest.SerializeToString,
-            Client__pb2.CurrentStateResponse.FromString,
+            '/ServerLobby.ServerLobby/JoinLobby',
+            Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinLobbyRequest.SerializeToString,
+            Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinLobbyResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -161,7 +161,7 @@ class Client(object):
             _registered_method=True)
 
     @staticmethod
-    def AddSong(request,
+    def GetRooms(request,
             target,
             options=(),
             channel_credentials=None,
@@ -174,9 +174,9 @@ class Client(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/Client.Client/AddSong',
-            Client__pb2.AddSongRequest.SerializeToString,
-            Client__pb2.AddSongResponse.FromString,
+            '/ServerLobby.ServerLobby/GetRooms',
+            Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.GetRoomsRequest.SerializeToString,
+            Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.GetRoomsResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -188,7 +188,7 @@ class Client(object):
             _registered_method=True)
 
     @staticmethod
-    def DeleteSong(request,
+    def JoinRoom(request,
             target,
             options=(),
             channel_credentials=None,
@@ -201,9 +201,9 @@ class Client(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/Client.Client/DeleteSong',
-            Client__pb2.DeleteSongRequest.SerializeToString,
-            Client__pb2.DeleteSongResponse.FromString,
+            '/ServerLobby.ServerLobby/JoinRoom',
+            Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinRoomRequest.SerializeToString,
+            Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinRoomResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -215,7 +215,7 @@ class Client(object):
             _registered_method=True)
 
     @staticmethod
-    def PauseSong(request,
+    def LeaveRoom(request,
             target,
             options=(),
             channel_credentials=None,
@@ -228,9 +228,9 @@ class Client(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/Client.Client/PauseSong',
-            Client__pb2.PauseSongRequest.SerializeToString,
-            Client__pb2.PauseSongResponse.FromString,
+            '/ServerLobby.ServerLobby/LeaveRoom',
+            Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.LeaveRoomRequest.SerializeToString,
+            Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.LeaveRoomResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -242,7 +242,7 @@ class Client(object):
             _registered_method=True)
 
     @staticmethod
-    def MovePosition(request,
+    def StartRoom(request,
             target,
             options=(),
             channel_credentials=None,
@@ -255,9 +255,9 @@ class Client(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/Client.Client/MovePosition',
-            Client__pb2.MovePositionRequest.SerializeToString,
-            Client__pb2.MovePositionResponse.FromString,
+            '/ServerLobby.ServerLobby/StartRoom',
+            Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.StartRoomRequest.SerializeToString,
+            Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.StartRoomResponse.FromString,
             options,
             channel_credentials,
             insecure,

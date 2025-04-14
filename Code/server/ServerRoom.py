@@ -2,11 +2,8 @@ from concurrent import futures
 import grpc
 import time
 
-import ServerRoomMusic_pb2
-import ServerRoomMusic_pb2_grpc
-
-import ServerRoomTime_pb2
-import ServerRoomTime_pb2_grpc
+from Server.ServerRoomGRPC import (ServerRoomMusic_pb2, ServerRoomMusic_pb2_grpc, 
+                            ServerRoomTime_pb2, ServerRoomTime_pb2_grpc)
 
 class ServerRoomTimeServicer(ServerRoomTime_pb2_grpc.ServerRoomTimeServicer):
     def TimeSync(self, request, context):
