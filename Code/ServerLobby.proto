@@ -1,0 +1,60 @@
+// Compile via python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. ServerLobby.proto 
+
+syntax = "proto3";
+
+package ServerLobby;
+
+// Status values
+enum Status {
+  PENDING = 0;
+  SUCCESS = 1;
+  MATCH = 2;
+  ERROR = 3;
+}
+
+
+// Join the lobby 
+message JoinLobbyRequest {
+    string username = 1;
+}
+message JoinLobbyResponse {
+    Status status = 1;
+}
+
+
+// Get the currently active rooms
+message GetRoomsRequest {}
+message GetRoomsResponse{
+    repeated string rooms = 1;
+    repeated string addresses = 2;
+}
+
+// Try to join a room
+message JoinRoomRequest {
+    string name = 1;
+}
+message JoinRoomResponse {}
+
+// Inform you left a room
+message LeaveRoomRequest {
+    string name = 1;
+}
+message LeaveRoomResponse {}
+
+// Try to start a room
+message StartRoomRequest {
+    string name = 1;
+}
+message StartRoomResponse {
+    Status status = 1;
+    repeated string rooms = 2;
+    repeated string addresses = 3;
+}
+
+service ServerLobby {
+    rpc JoinLobby(JoinLobbyRequest) returns (JoinLobbyResponse);
+    rpc GetRooms(GetRoomsRequest) returns (GetRoomsResponse);
+    rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
+    rpc LeaveRoom(LeaveRoomRequest) returns (LeaveRoomResponse);
+    rpc StartRoom(StartRoomRequest) returns (StartRoomResponse);
+}
