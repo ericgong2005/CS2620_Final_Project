@@ -4,8 +4,8 @@ import sys
 import time
 import multiprocessing as mp
 
-import ServerLobby_pb2
-import ServerLobby_pb2_grpc
+from server_grpc import ServerLobby_pb2
+from server_grpc import ServerLobby_pb2_grpc
 
 from ServerRoom import startServerRoom
 
