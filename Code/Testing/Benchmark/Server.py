@@ -8,8 +8,8 @@ from Testing.Benchmark.BenchmarkGRPC import Benchmark_pb2, Benchmark_pb2_grpc
 
 # Configuration
 SERVER_ADDRESS = '[::]:50051'
-OUTPUT_DIR = 'uploaded_files'  # Directory where uploaded files are saved
-OUTPUT_FILENAME = 'uploaded_audio.mp3'  # Save with a predetermined name or use a timestamp to differentiate
+OUTPUT_DIR = 'uploaded_files'  # Directory where uploaded files will be saved
+OUTPUT_FILENAME = 'MapleLeafRag.mp3'  # File name for saving the uploaded audio
 
 # Ensure the output directory exists.
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -25,14 +25,21 @@ class MusicUploadServiceServicer(Benchmark_pb2_grpc.MusicUploadServiceServicer):
         return Benchmark_pb2.UploadMusicResponse()
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    # Create a gRPC server with options to support larger message sizes.
+    server = grpc.server(
+        futures.ThreadPoolExecutor(max_workers=10),
+        options=[
+            ('grpc.max_send_message_length', 100 * 1024 * 1024),   # 100 MB
+            ('grpc.max_receive_message_length', 100 * 1024 * 1024)  # 100 MB
+        ]
+    )
     Benchmark_pb2_grpc.add_MusicUploadServiceServicer_to_server(MusicUploadServiceServicer(), server)
     server.add_insecure_port(SERVER_ADDRESS)
     server.start()
     print(f"Server running on {SERVER_ADDRESS} ...")
     try:
         while True:
-            time.sleep(86400)  # Keep the server alive for one day increments.
+            time.sleep(86400)  # Keep the server alive.
     except KeyboardInterrupt:
         server.stop(0)
 
