@@ -24,17 +24,17 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n/Testing/Benchmark/BenchmarkGRPC/Benchmark.proto\x12\x0eServerRoomTime\"\x11\n\x0fTimeSyncRequest\" \n\x10TimeSyncResponse\x12\x0c\n\x04time\x18\x01 \x01(\x03\x32_\n\x0eServerRoomTime\x12M\n\x08TimeSync\x12\x1f.ServerRoomTime.TimeSyncRequest\x1a .ServerRoomTime.TimeSyncResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n/Testing/Benchmark/BenchmarkGRPC/Benchmark.proto\x12\x0bMusicUpload\"(\n\x12UploadMusicRequest\x12\x12\n\naudio_data\x18\x01 \x01(\x0c\"\x15\n\x13UploadMusicResponse2f\n\x12MusicUploadService\x12P\n\x0bUploadMusic\x12\x1f.MusicUpload.UploadMusicRequest\x1a .MusicUpload.UploadMusicResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'Testing.Benchmark.BenchmarkGRPC.Benchmark_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_TIMESYNCREQUEST']._serialized_start=67
-  _globals['_TIMESYNCREQUEST']._serialized_end=84
-  _globals['_TIMESYNCRESPONSE']._serialized_start=86
-  _globals['_TIMESYNCRESPONSE']._serialized_end=118
-  _globals['_SERVERROOMTIME']._serialized_start=120
-  _globals['_SERVERROOMTIME']._serialized_end=215
+  _globals['_UPLOADMUSICREQUEST']._serialized_start=64
+  _globals['_UPLOADMUSICREQUEST']._serialized_end=104
+  _globals['_UPLOADMUSICRESPONSE']._serialized_start=106
+  _globals['_UPLOADMUSICRESPONSE']._serialized_end=127
+  _globals['_MUSICUPLOADSERVICE']._serialized_start=129
+  _globals['_MUSICUPLOADSERVICE']._serialized_end=231
 # @@protoc_insertion_point(module_scope)
