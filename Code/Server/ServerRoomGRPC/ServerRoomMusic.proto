@@ -4,12 +4,37 @@ syntax = "proto3";
 
 package ServerRoomMusic;
 
+// Status values
+enum Status {
+  PENDING = 0;
+  SUCCESS = 1;
+  MATCH = 2;
+  ERROR = 3;
+}
+
 // Kill Room
 message KillRoomRequest {
 
 }
 message KillRoomResponse {
 
+}
+
+message JoinRoomRequest {
+    string username = 1;
+    string ClientAddress = 2;
+}
+message JoinRoomResponse {
+    Status status = 1;
+    string RoomTimeAddress = 2;
+}
+
+// Inform you left a room
+message LeaveRoomRequest {
+    string username = 1;
+}
+message LeaveRoomResponse {
+    Status status = 1;
 }
 
 // Current State
@@ -44,6 +69,8 @@ message MovePositionResponse {
 
 service ServerRoomMusic {
     rpc KillRoom(KillRoomRequest) returns (KillRoomResponse);
+    rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
+    rpc LeaveRoom(LeaveRoomRequest) returns (LeaveRoomResponse);
     rpc CurrentState(CurrentStateRequest) returns (CurrentStateResponse);
     rpc AddSong(AddSongRequest) returns (AddSongResponse);
     rpc DeleteSong(DeleteSongRequest) returns (DeleteSongResponse);

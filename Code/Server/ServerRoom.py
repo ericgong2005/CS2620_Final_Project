@@ -10,11 +10,11 @@ from Server.ServerRoomGRPC import (ServerRoomMusic_pb2, ServerRoomMusic_pb2_grpc
 
 class ServerRoomTimeServicer(ServerRoomTime_pb2_grpc.ServerRoomTimeServicer):
     def TimeSync(self, request, context):
-        return ServerRoomTime_pb2.TimeSyncResponse(time=int(time.perf_counter()))
+        return ServerRoomTime_pb2.TimeSyncResponse(time=time.clock_gettime(time.CLOCK_REALTIME))
 
 class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
     def __init__(self, TimeAddress, Name, Room):
-        self.room = Room
+        self.Servicer = Room
         self.name = Name
         self.TimeAddress = TimeAddress
         self.users = {}  # Holds user to stub mappings
@@ -22,12 +22,37 @@ class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
     def Shutdown(self):
         time.sleep(1)
         print("Shutting Down", self.name)
-        self.room.stop(0)
+        self.Servicer.stop(0)
 
     # Kill Room
     def KillRoom(self, request, context):
         self.Shutdown()
         return ServerRoomMusic_pb2.KillRoomResponse()
+    
+    # Try to join a room
+    def JoinRoom(self, request, context):
+        # Establish stub to user
+        UserStub = None
+        try:
+            channel = grpc.insecure_channel(request.ClientAddress)
+            UserStub = Client_pb2_grpc.ClientStub(channel)
+            grpc.channel_ready_future(channel).result(timeout=1)
+            print(f"Room connected to User {request.username} at {request.ClientAddress}")
+        except Exception as e:
+            print(f"Failed to connect to User: {e}")
+            return ServerRoomMusic_pb2.JoinRoomResponse(status=ServerRoomMusic_pb2.Status.ERROR, 
+                                                    RoomTimeAddress=self.TimeAddress)
+        self.users[request.username] = UserStub
+        print(request.username, "has successfully joined", self.name)
+        return ServerRoomMusic_pb2.JoinRoomResponse(status=ServerRoomMusic_pb2.Status.SUCCESS, 
+                                                    RoomTimeAddress=self.TimeAddress)
+
+    # Inform you left a room
+    def LeaveRoom(self, request, context):
+        if request.username in self.users:
+            del self.users[request.username]
+        print(request.username, "has left", self.name)
+        return ServerRoomMusic_pb2.LeaveRoomResponse(status=ServerRoomMusic_pb2.Status.SUCCESS)
 
     # Current State
     def CurrentState(self, request, context):

@@ -89,7 +89,7 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
             channel = grpc.insecure_channel(RoomMusicAddress)
             RoomStub = ServerRoomMusic_pb2_grpc.ServerRoomMusicStub(channel)
             grpc.channel_ready_future(channel).result(timeout=1)
-            print(f"Lobby connected to Room {name} at {RoomMusicAddress}")
+            print(f"Lobby connected to {name} at {RoomMusicAddress}")
         except Exception as e:
             print(f"Failed to connect to Room: {e}")
             return ServerLobby_pb2.StartRoomResponse(status=ServerLobby_pb2.Status.ERROR, 

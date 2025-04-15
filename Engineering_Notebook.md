@@ -44,6 +44,8 @@ GRPC specs:
     - RoomMusic:
         - KillRoom: allos the serverlobby to kill a room if there are no users or whatnot
         - CurrentState: list of songs, point in current song, music file for current song, etc.
+        - JoinRoom: Client informs of join, learns RoomTime Address
+        - LeaveRoom: Client left
         - AddSong
         - DeleteSong
         - PauseSong

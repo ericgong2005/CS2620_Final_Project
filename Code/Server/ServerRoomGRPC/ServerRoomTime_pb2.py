@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n*Server/ServerRoomGRPC/ServerRoomTime.proto\x12\x0eServerRoomTime\"\x11\n\x0fTimeSyncRequest\" \n\x10TimeSyncResponse\x12\x0c\n\x04time\x18\x01 \x01(\x03\x32_\n\x0eServerRoomTime\x12M\n\x08TimeSync\x12\x1f.ServerRoomTime.TimeSyncRequest\x1a .ServerRoomTime.TimeSyncResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n*Server/ServerRoomGRPC/ServerRoomTime.proto\x12\x0eServerRoomTime\"\x11\n\x0fTimeSyncRequest\" \n\x10TimeSyncResponse\x12\x0c\n\x04time\x18\x01 \x01(\x01\x32_\n\x0eServerRoomTime\x12M\n\x08TimeSync\x12\x1f.ServerRoomTime.TimeSyncRequest\x1a .ServerRoomTime.TimeSyncResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)

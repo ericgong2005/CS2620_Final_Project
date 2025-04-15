@@ -39,6 +39,16 @@ class ServerRoomMusicStub(object):
                 request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.KillRoomRequest.SerializeToString,
                 response_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.KillRoomResponse.FromString,
                 _registered_method=True)
+        self.JoinRoom = channel.unary_unary(
+                '/ServerRoomMusic.ServerRoomMusic/JoinRoom',
+                request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.JoinRoomRequest.SerializeToString,
+                response_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.JoinRoomResponse.FromString,
+                _registered_method=True)
+        self.LeaveRoom = channel.unary_unary(
+                '/ServerRoomMusic.ServerRoomMusic/LeaveRoom',
+                request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.LeaveRoomRequest.SerializeToString,
+                response_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.LeaveRoomResponse.FromString,
+                _registered_method=True)
         self.CurrentState = channel.unary_unary(
                 '/ServerRoomMusic.ServerRoomMusic/CurrentState',
                 request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.CurrentStateRequest.SerializeToString,
@@ -70,6 +80,18 @@ class ServerRoomMusicServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def KillRoom(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def JoinRoom(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def LeaveRoom(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -112,6 +134,16 @@ def add_ServerRoomMusicServicer_to_server(servicer, server):
                     servicer.KillRoom,
                     request_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.KillRoomRequest.FromString,
                     response_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.KillRoomResponse.SerializeToString,
+            ),
+            'JoinRoom': grpc.unary_unary_rpc_method_handler(
+                    servicer.JoinRoom,
+                    request_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.JoinRoomRequest.FromString,
+                    response_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.JoinRoomResponse.SerializeToString,
+            ),
+            'LeaveRoom': grpc.unary_unary_rpc_method_handler(
+                    servicer.LeaveRoom,
+                    request_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.LeaveRoomRequest.FromString,
+                    response_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.LeaveRoomResponse.SerializeToString,
             ),
             'CurrentState': grpc.unary_unary_rpc_method_handler(
                     servicer.CurrentState,
@@ -166,6 +198,60 @@ class ServerRoomMusic(object):
             '/ServerRoomMusic.ServerRoomMusic/KillRoom',
             Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.KillRoomRequest.SerializeToString,
             Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.KillRoomResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def JoinRoom(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/ServerRoomMusic.ServerRoomMusic/JoinRoom',
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.JoinRoomRequest.SerializeToString,
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.JoinRoomResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def LeaveRoom(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/ServerRoomMusic.ServerRoomMusic/LeaveRoom',
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.LeaveRoomRequest.SerializeToString,
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.LeaveRoomResponse.FromString,
             options,
             channel_credentials,
             insecure,
