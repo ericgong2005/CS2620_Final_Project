@@ -13,14 +13,21 @@ class ServerRoomTimeServicer(ServerRoomTime_pb2_grpc.ServerRoomTimeServicer):
         return ServerRoomTime_pb2.TimeSyncResponse(time=int(time.perf_counter()))
 
 class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
-    def __init__(self, TimeAddress, Name):
-        self.Name = Name
+    def __init__(self, TimeAddress, Name, Room):
+        self.room = Room
+        self.name = Name
         self.TimeAddress = TimeAddress
         self.users = {}  # Holds user to stub mappings
 
+    def Shutdown(self):
+        time.sleep(1)
+        print("Shutting Down", self.name)
+        self.room.stop(0)
+
     # Kill Room
     def KillRoom(self, request, context):
-        pass
+        self.Shutdown()
+        return ServerRoomMusic_pb2.KillRoomResponse()
 
     # Current State
     def CurrentState(self, request, context):
@@ -55,7 +62,7 @@ def startServerRoom(LobbyQueue, Name):
 
     # Start ServerRoomMusic gRPC server.
     ServerRoomMusic = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
-    ServerRoomMusic_pb2_grpc.add_ServerRoomMusicServicer_to_server(ServerRoomMusicServicer(TimeAddress, Name), ServerRoomMusic)
+    ServerRoomMusic_pb2_grpc.add_ServerRoomMusicServicer_to_server(ServerRoomMusicServicer(TimeAddress, Name, ServerRoomMusic), ServerRoomMusic)
     MusicAddress = hostname + ":" + str(ServerRoomMusic.add_insecure_port(f"{hostname}:0"))
     ServerRoomMusic.start()
     print(f"ServerRoomMusic started on {MusicAddress}")
@@ -65,6 +72,7 @@ def startServerRoom(LobbyQueue, Name):
 
     ServerRoomMusic.wait_for_termination()
     ServerRoomTime.stop(0)
+    print("Fully Shutdown", Name)
 
 if __name__ == '__main__':
     startServerRoom(None, None)

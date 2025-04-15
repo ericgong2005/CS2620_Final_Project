@@ -49,8 +49,7 @@ def ClientTerminalRoom(RoomStub, ClientQueue, username):
         else:
             print("Unknown Command")
     
-
-
+    
 def ClientTerminalStart(LobbyStub, ClientQueue):
     try:
         # Set a username
