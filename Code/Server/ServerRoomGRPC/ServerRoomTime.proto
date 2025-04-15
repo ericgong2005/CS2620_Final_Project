@@ -7,7 +7,7 @@ package ServerRoomTime;
 // Time Sync
 message TimeSyncRequest {}
 message TimeSyncResponse {
-    int64 time = 1;
+    double time = 1;
 }
 
 service ServerRoomTime {
