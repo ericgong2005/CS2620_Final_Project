@@ -41,6 +41,7 @@ message LeaveRoomResponse {
 message CurrentStateRequest {
 }
 message CurrentStateResponse {
+    repeated string usernames = 1;
 }
 
 // Add Song
@@ -55,16 +56,16 @@ message DeleteSongRequest {
 message DeleteSongResponse {
 }
 
+// Start Song
+message StartSongRequest {
+}
+message StartSongResponse {
+}
+
 // Pause Song
 message PauseSongRequest {
 }
 message PauseSongResponse {
-}
-
-// Move Position
-message MovePositionRequest {
-}
-message MovePositionResponse {
 }
 
 service ServerRoomMusic {
@@ -74,6 +75,6 @@ service ServerRoomMusic {
     rpc CurrentState(CurrentStateRequest) returns (CurrentStateResponse);
     rpc AddSong(AddSongRequest) returns (AddSongResponse);
     rpc DeleteSong(DeleteSongRequest) returns (DeleteSongResponse);
+    rpc StartSong(StartSongRequest) returns (StartSongResponse);
     rpc PauseSong(PauseSongRequest) returns (PauseSongResponse);
-    rpc MovePosition(MovePositionRequest) returns (MovePositionResponse);
 }

@@ -148,8 +148,38 @@ def ClientTerminalStart(LobbyStub, ClientQueue, ClientAddress):
                 else:
                     print(f"Room Made.\nCurrent Rooms:\n{response.rooms}")
 
+            elif lines[0] == "GetRooms":
+                response = LobbyStub.GetRooms(ServerLobby_pb2.GetRoomsRequest())
+                print("Rooms:\n", response.rooms)
+
+            elif lines[0] == "StartJoin":
+                if len(lines) < 2:
+                    print("Usage: StartJoin <Name>")
+                    continue
+                response = LobbyStub.StartRoom(ServerLobby_pb2.StartRoomRequest(name=lines[1]))
+                if response.status == ServerLobby_pb2.Status.MATCH:
+                    print(f"Name Taken.\nCurrent Rooms:\n{response.rooms}")
+                elif response.status == ServerLobby_pb2.Status.ERROR:
+                    print(f"Room Failed to Start.\nCurrent Rooms:\n{response.rooms}")
+                else:
+                    print(f"Room Made.\nCurrent Rooms:\n{response.rooms}")
+                    RoomAddress = response.addresses[roomlist.index(room)]
+                    try:
+                        channel = grpc.insecure_channel(RoomAddress)
+                        RoomStub = ServerRoomMusic_pb2_grpc.ServerRoomMusicStub(channel)
+                        grpc.channel_ready_future(channel).result(timeout=1)
+                        print(f"Client connected to {room} at {RoomAddress}")
+                        LobbyStub.JoinRoom(ServerLobby_pb2.JoinRoomRequest(username=username, roomname=room))
+                        ClientTerminalRoom(RoomStub, ClientQueue, ClientAddress, username)
+                    except grpc.FutureTimeoutError:
+                        print("Failed to Connect") 
+                    LobbyStub.LeaveRoom(ServerLobby_pb2.LeaveRoomRequest(username=username))
+
             elif lines[0] == "Join":
                 response = LobbyStub.GetRooms(ServerLobby_pb2.GetRoomsRequest())
+                if len(response.rooms) == 0:
+                    print("No active rooms, create a room first")
+                    continue
                 print("Rooms:\n", response.rooms)
                 room = "Room: " + input("Choose a room: ")
                 roomlist = list(response.rooms)
@@ -172,6 +202,7 @@ def ClientTerminalStart(LobbyStub, ClientQueue, ClientAddress):
                 print("Unknown Command")
 
     except KeyboardInterrupt:
+        LobbyStub.LeaveLobby(ServerLobby_pb2.LeaveLobbyRequest(username=username))
         return
 
 if __name__ == '__main__':
@@ -208,3 +239,5 @@ if __name__ == '__main__':
     ClientTerminalStart(LobbyStub, ClientQueue, ClientAddress)
         
     Client.stop(0)
+
+    print("Client Stopped")

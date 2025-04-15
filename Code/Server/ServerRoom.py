@@ -57,7 +57,7 @@ class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
 
     # Current State
     def CurrentState(self, request, context):
-        pass
+        return ServerRoomMusic_pb2.CurrentStateResponse(usernames=list(self.users.keys()))
 
     # Add Song RPC method
     def AddSong(self, request, context):
@@ -69,10 +69,6 @@ class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
 
     # Pause Song
     def PauseSong(self, request, context):
-        pass
-
-    # Move Position
-    def MovePosition(self, request, context):
         pass
 
 def startServerRoom(LobbyQueue, Name):

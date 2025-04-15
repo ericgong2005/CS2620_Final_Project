@@ -1,5 +1,5 @@
 # Number of seconds before a room times out due to inactivity
-ROOM_TIMEOUT = 30
+ROOM_TIMEOUT = 10
 
 # TimeSync Parameters
 WAIT = 0.5

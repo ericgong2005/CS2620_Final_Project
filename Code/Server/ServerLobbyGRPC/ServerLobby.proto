@@ -21,6 +21,13 @@ message JoinLobbyResponse {
     Status status = 1;
 }
 
+// Leave the lobby 
+message LeaveLobbyRequest {
+    string username = 1;
+}
+message LeaveLobbyResponse {
+}
+
 
 // Get the currently active rooms
 message GetRoomsRequest {}
@@ -59,6 +66,7 @@ message StartRoomResponse {
 
 service ServerLobby {
     rpc JoinLobby(JoinLobbyRequest) returns (JoinLobbyResponse);
+    rpc LeaveLobby(LeaveLobbyRequest) returns (LeaveLobbyResponse);
     rpc GetRooms(GetRoomsRequest) returns (GetRoomsResponse);
     rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
     rpc LeaveRoom(LeaveRoomRequest) returns (LeaveRoomResponse);
