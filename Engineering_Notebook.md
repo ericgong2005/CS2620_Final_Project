@@ -1,6 +1,6 @@
 Todo:
- - Organize into subdirectories
  - Add upload music to serverlobby, and corresponding getmusiclist related commands
+ - Implement TimeSync
 
 Time synchronization requirements:
  - Will need accurate shared time
