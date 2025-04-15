@@ -31,15 +31,21 @@ message GetRoomsResponse{
 
 // Try to join a room
 message JoinRoomRequest {
-    string name = 1;
+    string username = 1;
+    string roomname = 2;
 }
-message JoinRoomResponse {}
+message JoinRoomResponse {
+    Status status = 1;
+}
 
 // Inform you left a room
 message LeaveRoomRequest {
-    string name = 1;
+    string username = 1;
+    string roomname = 2;
 }
-message LeaveRoomResponse {}
+message LeaveRoomResponse {
+    Status status = 1;
+}
 
 // Try to start a room
 message StartRoomRequest {

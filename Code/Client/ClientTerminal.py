@@ -33,6 +33,24 @@ class ClientServicer(Client_pb2_grpc.ClientServicer):
     def MovePosition(self, request, context):
         pass
 
+def ClientTerminalRoom(RoomStub, ClientQueue, username):
+    while True:
+        command = input(f"Room: Enter a command as {username}: ")
+        if command == "exit":
+            print("Exiting Room")
+            return
+        lines = command.split()
+        if not lines:
+            continue
+
+        if lines[0] == "Sync":
+            print("Begin Sync")
+
+        else:
+            print("Unknown Command")
+    
+
+
 def ClientTerminalStart(LobbyStub, ClientQueue):
     try:
         # Set a username
@@ -46,7 +64,7 @@ def ClientTerminalStart(LobbyStub, ClientQueue):
 
         # Handle commands
         while True:
-            command = input(f"Enter a command as {username}: ")
+            command = input(f"Lobby: Enter a command as {username}: ")
             if command == "exit":
                 break
             lines = command.split()
@@ -56,11 +74,33 @@ def ClientTerminalStart(LobbyStub, ClientQueue):
             if lines[0] == "Start":
                 if len(lines) < 2:
                     print("Usage: Start <Name>")
-                response = LobbyStub.StartRoom(ServerLobby_pb2.StartRoomRequest(name=lines[1]), timeout=5)
+                response = LobbyStub.StartRoom(ServerLobby_pb2.StartRoomRequest(name=lines[1]))
                 if response.status == ServerLobby_pb2.Status.MATCH:
                     print(f"Name Taken.\nCurrent Rooms:\n{response.rooms}")
+                elif response.status == ServerLobby_pb2.Status.ERROR:
+                    print(f"Room Failed to Start.\nCurrent Rooms:\n{response.rooms}")
                 else:
                     print(f"Room Made.\nCurrent Rooms:\n{response.rooms}")
+
+            elif lines[0] == "Join":
+                response = LobbyStub.GetRooms(ServerLobby_pb2.GetRoomsRequest())
+                print("Rooms:\n", response.rooms)
+                room = "Room: " + input("Choose a room: ")
+                roomlist = list(response.rooms)
+                if room not in roomlist:
+                    print("Invalid Room")
+                    continue
+                RoomAddress = response.addresses[roomlist.index(room)]
+                try:
+                    channel = grpc.insecure_channel(RoomAddress)
+                    RoomStub = ServerLobby_pb2_grpc.ServerLobbyStub(channel)
+                    grpc.channel_ready_future(channel).result(timeout=1)
+                    print(f"Client connected to {room} at {RoomAddress}")
+                    LobbyStub.JoinRoom(ServerLobby_pb2.JoinRoomRequest(username=username, roomname=room))
+                    ClientTerminalRoom(RoomStub, ClientQueue, username)
+                except grpc.FutureTimeoutError:
+                    print("Failed to Connect")
+                LobbyStub.LeaveRoom(ServerLobby_pb2.LeaveRoomRequest(username=username))
 
             else:
                 print("Unknown Command")
@@ -72,16 +112,16 @@ if __name__ == '__main__':
     if len(sys.argv) != 2:
         print("Usage: python ClientTerminal.py ServerHost:Port")
         sys.exit(1)
-    server = sys.argv[1]
+    ServerAddress = sys.argv[1]
 
     # Connect to ServerLobby
     LobbyStub = None
     while True:
         try:
-            channel = grpc.insecure_channel(server)
+            channel = grpc.insecure_channel(ServerAddress)
             LobbyStub = ServerLobby_pb2_grpc.ServerLobbyStub(channel)
             grpc.channel_ready_future(channel).result(timeout=1)
-            print(f"Client connected to Lobby at {server}")
+            print(f"Client connected to Lobby at {ServerAddress}")
             break
         except grpc.FutureTimeoutError:
             time.sleep(0.5)

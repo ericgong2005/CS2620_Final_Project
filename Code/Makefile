@@ -33,4 +33,4 @@ ServerRoom:
 	python -m Server.ServerRoom $(ARGS)
 
 %:
-	@echo "Unrecognised Command"
+	@echo "Makefile: Unrecognised Command"
