@@ -26,8 +26,7 @@ if _version_not_supported:
 
 
 class MusicUploadServiceStub(object):
-    """Service definition that accepts a music file upload.
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
         """Constructor.
@@ -43,8 +42,7 @@ class MusicUploadServiceStub(object):
 
 
 class MusicUploadServiceServicer(object):
-    """Service definition that accepts a music file upload.
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def UploadMusic(self, request, context):
         """Missing associated documentation comment in .proto file."""
@@ -69,8 +67,7 @@ def add_MusicUploadServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class MusicUploadService(object):
-    """Service definition that accepts a music file upload.
-    """
+    """Missing associated documentation comment in .proto file."""
 
     @staticmethod
     def UploadMusic(request,
