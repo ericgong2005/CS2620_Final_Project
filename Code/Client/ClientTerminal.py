@@ -36,7 +36,10 @@ class ClientServicer(Client_pb2_grpc.ClientServicer):
     # Move Position
     def MovePosition(self, request, context):
         pass
-
+'''
+Repeats < 0 will repeat the sync until the variance in the computed clock offset
+is less than MAX_OFFSET_VARIANCE, or for the specified number of repeats
+'''
 def TimeSync(TimeStub, offset, delay, repeats = -1):
     while True:
         Start = time.clock_gettime(time.CLOCK_REALTIME)
@@ -44,13 +47,13 @@ def TimeSync(TimeStub, offset, delay, repeats = -1):
         End = time.clock_gettime(time.CLOCK_REALTIME)
         CurDelay = (End - Start)/2
         CurOffset = Start + CurDelay - response.time
-        print("TimeSync Stats:\n\tStarted:", round(Start%100,3), 
-              "\nEnded:", round(End%100,3),
-              "\nPredicted Delay:", CurDelay,
-              "\nPredicted Offset:", CurOffset,
-              "\nPrevious Offset Variance:", (np.var(offset) if len(offset > 1) else "Too Few Measurements"))
-        np.append(delay, CurDelay)
-        np.append(offset, CurOffset)
+        # print("TimeSync Stats:\n\tStarted:", round(Start%100,3), 
+        #       "\n\tEnded:", round(End%100,3),
+        #       "\n\tPredicted Delay:", CurDelay,
+        #       "\n\tPredicted Offset:", CurOffset,
+        #       "\n\tPrevious Offset Variance:", (np.var(offset) if len(offset > 1) else "Too Few Measurements"))
+        delay = np.append(delay, CurDelay)
+        offset = np.append(offset, CurOffset)
         if len(delay) > COUNTS:
             delay = delay[1:]
             offset = offset[1:]
@@ -85,7 +88,10 @@ def ClientTerminalRoom(RoomStub, ClientQueue, ClientAddress, username):
     offset = np.array([])
     delay = np.array([])
     offset, delay = TimeSync(TimeStub, offset, delay)
-    print("TimeSync Results:\n\tOffset: ", offset, "\nDelay:", delay)
+    print("TimeSync Results:\n\tOffset (ms): ", round(np.mean(offset)*1000,5), 
+          "\n\tDelay (ms):", round(np.mean(delay)*1000, 5), 
+          "\n\tOffset Variance (ns):", round(np.var(offset)*10**6,5),
+          "\n\tDelay Variance (ns):", round(np.var(delay)*10**6,5))
 
     while True:
         command = input(f"Room: Enter a command as {username}: ")
@@ -100,7 +106,10 @@ def ClientTerminalRoom(RoomStub, ClientQueue, ClientAddress, username):
         if lines[0] == "Sync":
             print("Begin Time Sync")
             offset, delay = offset, delay = TimeSync(TimeStub, offset, delay, 5)
-            print("TimeSync Results:\n\tOffset: ", offset, "\nDelay:", delay)
+            print("TimeSync Results:\n\tOffset (ms): ", round(np.mean(offset)*1000,5), 
+                    "\n\tDelay (ms):", round(np.mean(delay)*1000, 5), 
+                    "\n\tOffset Variance (ns):", round(np.var(offset)*10**6,5),
+                    "\n\tDelay Variance (ns):", round(np.var(delay)*10**6,5))
 
         else:
             print("Unknown Command")
@@ -130,6 +139,7 @@ def ClientTerminalStart(LobbyStub, ClientQueue, ClientAddress):
             if lines[0] == "Start":
                 if len(lines) < 2:
                     print("Usage: Start <Name>")
+                    continue
                 response = LobbyStub.StartRoom(ServerLobby_pb2.StartRoomRequest(name=lines[1]))
                 if response.status == ServerLobby_pb2.Status.MATCH:
                     print(f"Name Taken.\nCurrent Rooms:\n{response.rooms}")

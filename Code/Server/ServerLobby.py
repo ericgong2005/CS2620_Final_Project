@@ -2,6 +2,7 @@ from concurrent import futures
 import grpc
 import sys
 import time
+import socket
 import multiprocessing as mp
 
 from Client.ClientGRPC import Client_pb2, Client_pb2_grpc
@@ -108,9 +109,13 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print("Usage: python ServerLobby.py Host:Port")
+        print("Usage: python ServerLobby.py Port")
         sys.exit(1)
-    address = sys.argv[1]
+    port = sys.argv[1]
+
+    hostname = socket.gethostbyname(socket.gethostname())
+
+    address = hostname + ":" + port
 
     mp.set_start_method('spawn')
 
