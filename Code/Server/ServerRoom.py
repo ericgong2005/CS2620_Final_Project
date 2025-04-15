@@ -1,6 +1,7 @@
 from concurrent import futures
 import grpc
 import time
+import socket
 
 from Client.ClientGRPC import Client_pb2, Client_pb2_grpc
 from Server.ServerLobbyGRPC import ServerLobby_pb2, ServerLobby_pb2_grpc
@@ -42,17 +43,20 @@ class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
         pass
 
 def startServerRoom(LobbyQueue, Name):
+    # Get hostname
+    hostname = socket.gethostbyname(socket.gethostname())
+
     # Start ServerRoomTime gRPC server.
     ServerRoomTime = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
     ServerRoomTime_pb2_grpc.add_ServerRoomTimeServicer_to_server(ServerRoomTimeServicer(), ServerRoomTime)
-    TimeAddress = ServerRoomTime.add_insecure_port("localhost:0")
+    TimeAddress = hostname + ":" + str(ServerRoomTime.add_insecure_port(f"{hostname}:0"))
     ServerRoomTime.start()
     print(f"ServerRoomTime started on {TimeAddress}")
 
     # Start ServerRoomMusic gRPC server.
     ServerRoomMusic = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
     ServerRoomMusic_pb2_grpc.add_ServerRoomMusicServicer_to_server(ServerRoomMusicServicer(TimeAddress, Name), ServerRoomMusic)
-    MusicAddress = ServerRoomMusic.add_insecure_port("localhost:0")
+    MusicAddress = hostname + ":" + str(ServerRoomMusic.add_insecure_port(f"{hostname}:0"))
     ServerRoomMusic.start()
     print(f"ServerRoomMusic started on {MusicAddress}")
 

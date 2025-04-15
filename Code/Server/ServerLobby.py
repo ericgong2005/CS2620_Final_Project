@@ -18,10 +18,17 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
 
     def GetRoomAddresses(self):
         return [item[0] for item in self.rooms.values()]
+    
+    def CheckRooms(self):
+        for 
 
     # Join the lobby
     def JoinLobby(self, request, context):
-        pass
+        print(f"JoinLobby Request with username {request.username}")
+        if request.username in self.users:
+            return ServerLobby_pb2.JoinLobbyResponse(status=ServerLobby_pb2.Status.MATCH)
+        self.users[request.username] = ("Lobby", int(time.time()))
+        return ServerLobby_pb2.JoinLobbyResponse(status=ServerLobby_pb2.Status.SUCCESS)
 
     # Get the currently active rooms
     def GetRooms(self, request, context):
@@ -37,20 +44,24 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
 
     # Try to start a room
     def StartRoom(self, request, context):
-        if request.name in self.rooms:
+        print(f"StartRoom Request with name {request.name}")
+        name = "Room: " + request.name
+        if name in self.rooms:
             return ServerLobby_pb2.StartRoomResponse(status=ServerLobby_pb2.Status.MATCH, 
-                                                     rooms=self.rooms.keys(), 
+                                                     rooms=list(self.rooms.keys()), 
                                                      addresses=self.GetRoomAddresses())
         LobbyQueue = mp.Queue()
-        ServerRoom = mp.Process(target=startServerRoom, args=(LobbyQueue, request.name))
+        ServerRoom = mp.Process(target=startServerRoom, args=(LobbyQueue, name))
         ServerRoom.start()
         
         RoomMusicAddress = LobbyQueue.get()
-        print("Room Started with address ", RoomMusicAddress)
+        print(name, " Started with address ", RoomMusicAddress)
 
-        self.rooms[request.name] = (RoomMusicAddress, 0, time.perf_counter)
+        self.rooms[name] = (RoomMusicAddress, 0, int(time.time()))
+        print("Current Rooms:", self.rooms)
+
         return ServerLobby_pb2.StartRoomResponse(status=ServerLobby_pb2.Status.SUCCESS, 
-                                                     rooms=self.rooms.keys(), 
+                                                     rooms=list(self.rooms.keys()), 
                                                      addresses=self.GetRoomAddresses())
 
 if __name__ == '__main__':
