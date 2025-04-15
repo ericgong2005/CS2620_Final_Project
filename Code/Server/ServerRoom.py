@@ -31,6 +31,7 @@ class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
     
     # Try to join a room
     def JoinRoom(self, request, context):
+        print("Join Room Request: ", request.username, request.ClientAddress)
         # Establish stub to user
         UserStub = None
         try:

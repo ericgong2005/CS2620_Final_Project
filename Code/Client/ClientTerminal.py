@@ -121,6 +121,7 @@ def ClientTerminalStart(LobbyStub, ClientQueue, ClientAddress):
         while True:
             command = input(f"Lobby: Enter a command as {username}: ")
             if command == "exit":
+                # Implement LeaveLobby
                 break
             lines = command.split()
             if not lines:

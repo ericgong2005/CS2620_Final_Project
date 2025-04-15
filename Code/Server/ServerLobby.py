@@ -47,6 +47,8 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
 
     # Try to join a room
     def JoinRoom(self, request, context):
+        self.CheckRooms()
+        
         if request.roomname not in self.rooms:
             return ServerLobby_pb2.JoinRoomResponse(status=ServerLobby_pb2.Status.ERROR)
         self.users[request.username] = (request.roomname, int(time.time()))
