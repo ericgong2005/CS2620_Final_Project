@@ -84,7 +84,7 @@ def ClientTerminalRoom(RoomStub, ClientQueue, ClientAddress, username):
     print("Begin Time Sync")
     offset = np.array([])
     delay = np.array([])
-    # offset, delay = TimeSync(TimeStub, offset, delay)
+    offset, delay = TimeSync(TimeStub, offset, delay)
     print("TimeSync Results:\n\tOffset: ", offset, "\nDelay:", delay)
 
     while True:
