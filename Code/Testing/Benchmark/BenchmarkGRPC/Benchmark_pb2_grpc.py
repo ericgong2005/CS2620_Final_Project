@@ -25,8 +25,9 @@ if _version_not_supported:
     )
 
 
-class ServerRoomTimeStub(object):
-    """Missing associated documentation comment in .proto file."""
+class MusicUploadServiceStub(object):
+    """Service definition that accepts a music file upload.
+    """
 
     def __init__(self, channel):
         """Constructor.
@@ -34,43 +35,45 @@ class ServerRoomTimeStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.TimeSync = channel.unary_unary(
-                '/ServerRoomTime.ServerRoomTime/TimeSync',
-                request_serializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.TimeSyncRequest.SerializeToString,
-                response_deserializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.TimeSyncResponse.FromString,
+        self.UploadMusic = channel.unary_unary(
+                '/MusicUpload.MusicUploadService/UploadMusic',
+                request_serializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadMusicRequest.SerializeToString,
+                response_deserializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadMusicResponse.FromString,
                 _registered_method=True)
 
 
-class ServerRoomTimeServicer(object):
-    """Missing associated documentation comment in .proto file."""
+class MusicUploadServiceServicer(object):
+    """Service definition that accepts a music file upload.
+    """
 
-    def TimeSync(self, request, context):
+    def UploadMusic(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_ServerRoomTimeServicer_to_server(servicer, server):
+def add_MusicUploadServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'TimeSync': grpc.unary_unary_rpc_method_handler(
-                    servicer.TimeSync,
-                    request_deserializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.TimeSyncRequest.FromString,
-                    response_serializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.TimeSyncResponse.SerializeToString,
+            'UploadMusic': grpc.unary_unary_rpc_method_handler(
+                    servicer.UploadMusic,
+                    request_deserializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadMusicRequest.FromString,
+                    response_serializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadMusicResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'ServerRoomTime.ServerRoomTime', rpc_method_handlers)
+            'MusicUpload.MusicUploadService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('ServerRoomTime.ServerRoomTime', rpc_method_handlers)
+    server.add_registered_method_handlers('MusicUpload.MusicUploadService', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
-class ServerRoomTime(object):
-    """Missing associated documentation comment in .proto file."""
+class MusicUploadService(object):
+    """Service definition that accepts a music file upload.
+    """
 
     @staticmethod
-    def TimeSync(request,
+    def UploadMusic(request,
             target,
             options=(),
             channel_credentials=None,
@@ -83,9 +86,9 @@ class ServerRoomTime(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ServerRoomTime.ServerRoomTime/TimeSync',
-            Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.TimeSyncRequest.SerializeToString,
-            Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.TimeSyncResponse.FromString,
+            '/MusicUpload.MusicUploadService/UploadMusic',
+            Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadMusicRequest.SerializeToString,
+            Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadMusicResponse.FromString,
             options,
             channel_credentials,
             insecure,

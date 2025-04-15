@@ -1,15 +1,18 @@
-// Compile via python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. ServerRoomTime.proto 
+// Compile via: python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. Testing/Benchmark/BenchmarkGRPC/Benchmark.proto
 
 syntax = "proto3";
 
-package ServerRoomTime;
+package MusicUpload;
 
-// Time Sync
-message TimeSyncRequest {}
-message TimeSyncResponse {
-    int64 time = 1;
+// Request message containing the serialized audio file.
+message UploadMusicRequest {
+    bytes audio_data = 1;
 }
 
-service ServerRoomTime {
-    rpc TimeSync(TimeSyncRequest) returns (TimeSyncResponse);
+// Response message; empty for now (could add status fields later).
+message UploadMusicResponse {}
+
+// Service definition that accepts a music file upload.
+service MusicUploadService {
+    rpc UploadMusic(UploadMusicRequest) returns (UploadMusicResponse);
 }
