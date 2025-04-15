@@ -1,8 +1,10 @@
-// Compile via: python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. Testing/Benchmark/BenchmarkGRPC/Benchmark.proto
+// Compile via: python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. Code/Testing/Benchmark/BenchmarkGRPC/Benchmark.proto
 
 syntax = "proto3";
+
 package MusicUpload;
 
+// Original full–file upload messages (Task 1)
 message UploadMusicRequest {
     string file_name = 1;
     bytes audio_data = 2;
@@ -10,6 +12,16 @@ message UploadMusicRequest {
 
 message UploadMusicResponse {}
 
+// New messages for chunked upload (Task 2)
+message UploadChunkRequest {
+    string file_name = 1;
+    bytes chunk_data = 2;
+    int32 chunk_index = 3;
+}
+
+message UploadChunkResponse {}
+
 service MusicUploadService {
     rpc UploadMusic(UploadMusicRequest) returns (UploadMusicResponse);
+    rpc UploadChunk(UploadChunkRequest) returns (UploadChunkResponse);
 }

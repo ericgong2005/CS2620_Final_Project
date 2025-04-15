@@ -39,12 +39,23 @@ class MusicUploadServiceStub(object):
                 request_serializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadMusicRequest.SerializeToString,
                 response_deserializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadMusicResponse.FromString,
                 _registered_method=True)
+        self.UploadChunk = channel.unary_unary(
+                '/MusicUpload.MusicUploadService/UploadChunk',
+                request_serializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadChunkRequest.SerializeToString,
+                response_deserializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadChunkResponse.FromString,
+                _registered_method=True)
 
 
 class MusicUploadServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def UploadMusic(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UploadChunk(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -57,6 +68,11 @@ def add_MusicUploadServiceServicer_to_server(servicer, server):
                     servicer.UploadMusic,
                     request_deserializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadMusicRequest.FromString,
                     response_serializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadMusicResponse.SerializeToString,
+            ),
+            'UploadChunk': grpc.unary_unary_rpc_method_handler(
+                    servicer.UploadChunk,
+                    request_deserializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadChunkRequest.FromString,
+                    response_serializer=Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadChunkResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -86,6 +102,33 @@ class MusicUploadService(object):
             '/MusicUpload.MusicUploadService/UploadMusic',
             Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadMusicRequest.SerializeToString,
             Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadMusicResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UploadChunk(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/MusicUpload.MusicUploadService/UploadChunk',
+            Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadChunkRequest.SerializeToString,
+            Testing_dot_Benchmark_dot_BenchmarkGRPC_dot_Benchmark__pb2.UploadChunkResponse.FromString,
             options,
             channel_credentials,
             insecure,
