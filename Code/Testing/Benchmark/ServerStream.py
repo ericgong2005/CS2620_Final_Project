@@ -24,11 +24,11 @@ class MusicUploadServiceServicer(Benchmark_pb2_grpc.MusicUploadServiceServicer):
        Receives a chunk and appends it to the file corresponding to request.file_name.
        For simplicity, we assume sequential (synchronous) requests so chunks arrive in order.
        """
-       file_path = os.path.join(OUTPUT_DIR, request.file_name)
-       mode = 'ab' if os.path.exists(file_path) else 'wb'
-       with open(file_path, mode) as f:
-           f.write(request.chunk_data)
-       print(f"Received chunk {request.chunk_index} for file '{request.file_name}'")
+    #    file_path = os.path.join(OUTPUT_DIR, request.file_name)
+    #    mode = 'ab' if os.path.exists(file_path) else 'wb'
+    #    with open(file_path, mode) as f:
+    #        f.write(request.chunk_data)
+    #    print(f"Received chunk {request.chunk_index} for file '{request.file_name}'")
        return Benchmark_pb2.UploadChunkResponse()
 
 
