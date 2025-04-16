@@ -1,5 +1,5 @@
 # Number of seconds before a room times out due to inactivity
-ROOM_TIMEOUT = 10
+ROOM_TIMEOUT = 30
 
 # Maximum size for grpc
 MAX_GRPC_TRANSMISSION = 100 * 1024 * 1024 # 100 MB

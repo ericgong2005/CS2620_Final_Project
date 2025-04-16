@@ -1,12 +1,15 @@
+# need to fix the join room button to link up with an already created room
+# need to add upload song feature
+
 from concurrent import futures
 import grpc
 import sys
 import threading
 
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QLabel, QLineEdit,
-    QPushButton, QMessageBox, QDialog, QListWidget,
-    QVBoxLayout, QHBoxLayout
+    QApplication, QMainWindow, QLabel, QLineEdit, QPushButton,
+    QMessageBox, QDialog, QListWidget, QVBoxLayout, QHBoxLayout,
+    QWidget, QFrame
 )
 
 from Client.ClientGRPC import Client_pb2, Client_pb2_grpc
@@ -32,7 +35,6 @@ class ClientServicer(Client_pb2_grpc.ClientServicer):
     def StopSong(self, request, context):
         pass
 
-# gRPC server in background thread
 def serve_grpc():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
     Client_pb2_grpc.add_ClientServicer_to_server(ClientServicer(), server)
@@ -41,7 +43,6 @@ def serve_grpc():
     print(f"gRPC client‑servicer listening on port {port}")
     server.wait_for_termination()
 
-# Login Window
 class LoginWindow(QMainWindow):
     def __init__(self, lobby_stub):
         super().__init__()
@@ -83,203 +84,223 @@ class LoginWindow(QMainWindow):
             QMessageBox.information(self, "Username Taken",
                                     f"Username '{username}' is already taken.")
         else:
-            # Success: open LobbyWindow
+            QMessageBox.information(self, "Username Available",
+                                    f"Username '{username}' is available!")
             self.hide()
-            self.lobby_window = LobbyWindow(self.lobby_stub, username, parent=self)
-            self.lobby_window.show()
+            self.lobby_win = LobbyWindow(self.lobby_stub, username, login_window=self)
+            self.lobby_win.show()
 
-# Lobby Window
 class LobbyWindow(QMainWindow):
-    def __init__(self, lobby_stub, username, parent=None):
-        super().__init__(parent)
+    def __init__(self, lobby_stub, username, login_window):
+        super().__init__()
         self.lobby_stub = lobby_stub
         self.username = username
-        self.login_window = parent
+        self.login_window = login_window
         self.init_ui()
 
     def init_ui(self):
-        self.setWindowTitle(f"Welcome {self.username}")
-        self.setGeometry(100, 100, 400, 300)
+        self.setWindowTitle(f"Lobby - {self.username}")
+        self.setGeometry(100, 100, 400, 200)
 
-        # Create Room button
+        self.label = QLabel(f"Welcome {self.username}", self)
+        self.label.move(150, 20)
+
         self.create_btn = QPushButton("Create Room", self)
-        self.create_btn.move(150, 80)
-        self.create_btn.clicked.connect(self.on_create_room)
+        self.create_btn.move(50, 80)
+        self.create_btn.clicked.connect(self.on_create)
 
-        # Join Room button
         self.join_btn = QPushButton("Join Room", self)
-        self.join_btn.move(150, 130)
-        self.join_btn.clicked.connect(self.on_join_room)
+        self.join_btn.move(150, 80)
+        self.join_btn.clicked.connect(self.on_join)
 
-        # Exit Lobby button
         self.exit_btn = QPushButton("Exit Lobby", self)
-        self.exit_btn.move(150, 180)
-        self.exit_btn.clicked.connect(self.on_exit_lobby)
+        self.exit_btn.move(275, 80)
+        self.exit_btn.clicked.connect(self.on_exit)
 
-    def on_exit_lobby(self):
-        # Call LeaveLobby RPC
-        try:
-            req = ServerLobby_pb2.LeaveLobbyRequest(username=self.username)
-            self.lobby_stub.LeaveLobby(req)
-        except grpc.RpcError as e:
-            print(f"Error leaving lobby: {e}")
-        # Return to login screen
+    def on_exit(self):
+        req = ServerLobby_pb2.LeaveLobbyRequest(username=self.username)
+        self.lobby_stub.LeaveLobby(req)
+        self.close()
         self.login_window.show()
-        self.close()
 
-    def on_create_room(self):
-        dialog = CreateRoomDialog(self.lobby_stub, self.username, parent=self)
+    def on_join(self):
+        dialog = JoinRoomDialog(self.lobby_stub, self, self.username)
         dialog.exec_()
 
-    def on_join_room(self):
-        dialog = JoinRoomDialog(self.lobby_stub, self.username, parent=self)
-        dialog.exec_()
+    def on_create(self):
+        dialog = CreateRoomDialog(self.lobby_stub, self, self.username)
+        # Only proceed if the dialog was accepted
+        if dialog.exec_() == QDialog.Accepted:
+            room_name = dialog.room_name
+            self.hide()
+            # Store room window on self so it isn't garbage-collected
+            self.room_win = RoomWindow(
+                lobby_stub=self.lobby_stub,
+                username=self.username,
+                room_name=room_name,
+                parent_lobby=self
+            )
+            self.room_win.show()
 
-# Create Room Dialog
-class CreateRoomDialog(QDialog):
-    def __init__(self, lobby_stub, username, parent=None):
-        super().__init__(parent)
-        self.lobby_stub = lobby_stub
-        self.username = username
-        self.lobby_window = parent
-        self.init_ui()
-
-    def init_ui(self):
-        self.setWindowTitle("Create Room")
-        self.resize(300, 150)
-
-        layout = QVBoxLayout(self)
-
-        label = QLabel("Enter Desired Room Name:", self)
-        layout.addWidget(label)
-
-        self.room_input = QLineEdit(self)
-        layout.addWidget(self.room_input)
-
-        btn_layout = QHBoxLayout()
-        enter_btn = QPushButton("Enter", self)
-        enter_btn.clicked.connect(self.attempt_create)
-        btn_layout.addWidget(enter_btn)
-
-        cancel_btn = QPushButton("Cancel", self)
-        cancel_btn.clicked.connect(self.close)
-        btn_layout.addWidget(cancel_btn)
-
-        layout.addLayout(btn_layout)
-
-    def attempt_create(self):
-        room_name = self.room_input.text().strip()
-        if not room_name:
-            QMessageBox.warning(self, "Input Error", "Room name cannot be empty.")
-            return
-        try:
-            req = ServerLobby_pb2.StartRoomRequest(name=room_name)
-            resp = self.lobby_stub.StartRoom(req)
-        except grpc.RpcError as e:
-            QMessageBox.critical(self, "RPC Error", f"Could not reach lobby server:\n{e}")
-            return
-
-        if resp.status == ServerLobby_pb2.Status.MATCH:
-            QMessageBox.information(self, "Name Taken",
-                                    f"Room '{room_name}' is already taken.")
-        else:
-            # Success: open RoomWindow
-            self.lobby_window.hide()
-            self.close()
-            self.room_window = RoomWindow(self.lobby_stub, self.username, room_name, parent=self.lobby_window)
-            self.room_window.show()
-
-# Room Window
-class RoomWindow(QMainWindow):
-    def __init__(self, lobby_stub, username, room_name, parent=None):
-        super().__init__(parent)
-        self.lobby_stub = lobby_stub
-        self.username = username
-        self.room_name = room_name
-        self.lobby_window = parent
-        self.init_ui()
-
-    def init_ui(self):
-        self.setWindowTitle(f"Room: {self.room_name}")
-        self.setGeometry(100, 100, 600, 400)
-
-        leave_btn = QPushButton("Leave Room", self)
-        leave_btn.move(10, 350)
-        leave_btn.clicked.connect(self.on_leave_room)
-
-    def on_leave_room(self):
-        try:
-            req = ServerLobby_pb2.LeaveRoomRequest(username=self.username, roomname=self.room_name)
-            self.lobby_stub.LeaveRoom(req)
-        except grpc.RpcError as e:
-            print(f"Error leaving room: {e}")
-        # Return to lobby window
-        self.lobby_window.show()
-        self.close()
-
-# Join Room Dialog
 class JoinRoomDialog(QDialog):
-    def __init__(self, lobby_stub, username, parent=None):
-        super().__init__(parent)
+    def __init__(self, lobby_stub, parent_lobby, username):
+        super().__init__(parent_lobby)
         self.lobby_stub = lobby_stub
+        self.parent_lobby = parent_lobby
         self.username = username
-        self.lobby_window = parent
         self.init_ui()
 
     def init_ui(self):
         self.setWindowTitle("Join Room")
-        self.resize(400, 300)
+        self.setGeometry(200, 200, 400, 300)
 
-        layout = QVBoxLayout(self)
+        layout = QVBoxLayout()
 
-        label = QLabel("Enter Room Code:", self)
-        layout.addWidget(label)
+        layout.addWidget(QLabel("Enter Room Code", self))
 
-        self.room_list = QListWidget(self)
-        # Fetch rooms
-        try:
-            resp = self.lobby_stub.GetRooms(ServerLobby_pb2.GetRoomsRequest())
-            for room in resp.rooms:
-                self.room_list.addItem(room)
-        except grpc.RpcError as e:
-            QMessageBox.critical(self, "RPC Error", f"Could not fetch rooms:\n{e}")
-        layout.addWidget(self.room_list)
+        self.list = QListWidget(self)
+        resp = self.lobby_stub.GetRooms(ServerLobby_pb2.GetRoomsRequest())
+        for room in resp.rooms:
+            self.list.addItem(room)
+        layout.addWidget(self.list)
 
-        self.room_input = QLineEdit(self)
-        layout.addWidget(self.room_input)
+        self.input = QLineEdit(self)
+        layout.addWidget(self.input)
 
-        btn_layout = QHBoxLayout()
-        enter_btn = QPushButton("Enter", self)
-        enter_btn.clicked.connect(self.attempt_join)
-        btn_layout.addWidget(enter_btn)
+        btn = QPushButton("Join", self)
+        btn.clicked.connect(self.on_join)
+        layout.addWidget(btn)
 
-        cancel_btn = QPushButton("Cancel", self)
-        cancel_btn.clicked.connect(self.close)
-        btn_layout.addWidget(cancel_btn)
+        cancel = QPushButton("Cancel", self)
+        cancel.clicked.connect(self.reject)
+        layout.addWidget(cancel)
 
-        layout.addLayout(btn_layout)
+        self.setLayout(layout)
 
-    def attempt_join(self):
-        room_name = self.room_input.text().strip() or self.room_list.currentItem().text() if self.room_list.currentItem() else None
-        if not room_name:
-            QMessageBox.warning(self, "Input Error", "Please select or enter a room name.")
+    def on_join(self):
+        roomname = self.input.text().strip()
+        if not roomname:
+            QMessageBox.warning(self, "Input Error", "Room name cannot be empty.")
             return
-        try:
-            req = ServerLobby_pb2.JoinRoomRequest(username=self.username, roomname=room_name)
-            resp = self.lobby_stub.JoinRoom(req)
-        except grpc.RpcError as e:
-            QMessageBox.critical(self, "RPC Error", f"Could not reach lobby server:\n{e}")
-            return
-
+        req = ServerLobby_pb2.JoinRoomRequest(username=self.username, roomname=roomname)
+        resp = self.lobby_stub.JoinRoom(req)
         if resp.status == ServerLobby_pb2.Status.ERROR:
-            QMessageBox.information(self, "Join Failed",
-                                    f"Room '{room_name}' does not exist.")
+            QMessageBox.information(self, "Error", "This room does not exist.")
         else:
-            QMessageBox.information(self, "Join Success",
-                                    f"Joined room '{room_name}' (placeholder).")
-            self.close()
+            QMessageBox.information(self, "Joined", "Successfully joined the room!")
+            self.accept()
 
-# Main GUI runner
+class CreateRoomDialog(QDialog):
+    def __init__(self, lobby_stub, parent_lobby, username):
+        super().__init__(parent_lobby)
+        self.lobby_stub = lobby_stub
+        self.parent_lobby = parent_lobby
+        self.username = username
+        self.init_ui()
+
+    def init_ui(self):
+        self.setWindowTitle("Create Room")
+        self.setGeometry(200, 200, 300, 150)
+
+        self.label = QLabel("Enter Desired Room Name:", self)
+        self.label.move(20, 20)
+
+        self.input = QLineEdit(self)
+        self.input.move(20, 50)
+        self.input.resize(260, 25)
+
+        self.btn = QPushButton("Create", self)
+        self.btn.move(100, 100)
+        self.btn.clicked.connect(self.on_create)
+
+    def on_create(self):
+        room_name = self.input.text().strip()
+        if not room_name:
+            QMessageBox.warning(self, "Input Error", "Room name cannot be empty.")
+            return
+
+        req = ServerLobby_pb2.StartRoomRequest(name=room_name)
+        resp = self.lobby_stub.StartRoom(req)
+        if resp.status == ServerLobby_pb2.Status.MATCH:
+            QMessageBox.information(
+                self, "Name Taken",
+                f"Room '{room_name}' is already taken."
+            )
+        else:
+            # Store the chosen room_name so the caller can use it
+            self.room_name = room_name
+            self.accept()
+
+class RoomWindow(QMainWindow):
+    def __init__(self, lobby_stub, username, room_name, parent_lobby):
+        super().__init__()
+        self.lobby_stub = lobby_stub
+        self.username = username
+        self.room_name = room_name
+        self.parent_lobby = parent_lobby
+        self.init_ui()
+
+    def init_ui(self):
+        self.setWindowTitle(f"Room: {self.room_name}")
+        self.setGeometry(150, 150, 900, 600)
+
+        central = QWidget(self)
+        self.setCentralWidget(central)
+
+        hbox = QHBoxLayout()
+
+        # Left section: Users
+        left_vbox = QVBoxLayout()
+        left_vbox.addWidget(QLabel("Users In Room"))
+        self.users_list = QListWidget()
+        left_vbox.addWidget(self.users_list, stretch=1)
+        self.leave_btn = QPushButton("Leave Room")
+        self.leave_btn.clicked.connect(self.on_leave)
+        left_vbox.addWidget(self.leave_btn)
+
+        # Middle section: blank
+        middle_vbox = QVBoxLayout()
+        middle_vbox.addStretch()
+
+        # Right section: Queue & Upload
+        right_vbox = QVBoxLayout()
+        right_vbox.addWidget(QLabel("Song Queue"))
+        self.queue_list = QListWidget()
+        right_vbox.addWidget(self.queue_list, stretch=1)
+        self.upload_btn = QPushButton("Upload Song mp3")
+        self.upload_btn.clicked.connect(self.on_upload)
+        right_vbox.addWidget(self.upload_btn)
+
+        # Vertical separators
+        line1 = QFrame(); line1.setFrameShape(QFrame.VLine); line1.setFrameShadow(QFrame.Sunken)
+        line2 = QFrame(); line2.setFrameShape(QFrame.VLine); line2.setFrameShadow(QFrame.Sunken)
+
+        hbox.addLayout(left_vbox)
+        hbox.addWidget(line1)
+        hbox.addLayout(middle_vbox)
+        hbox.addWidget(line2)
+        hbox.addLayout(right_vbox)
+
+        central.setLayout(hbox)
+
+        # Placeholder: add current user
+        self.users_list.addItem(self.username)
+
+    def on_leave(self):
+        req = ServerLobby_pb2.LeaveRoomRequest(
+            username=self.username,
+            roomname=f"Room: {self.room_name}"
+        )
+        self.lobby_stub.LeaveRoom(req)
+        self.close()
+        self.parent_lobby.show()
+
+    def on_upload(self):
+        QMessageBox.information(
+            self, "Upload",
+            "If this were coded, it would upload a song"
+        )
+
 def run_gui(server_address):
     channel = grpc.insecure_channel(server_address)
     try:
@@ -290,8 +311,8 @@ def run_gui(server_address):
     lobby_stub = ServerLobby_pb2_grpc.ServerLobbyStub(channel)
 
     app = QApplication(sys.argv)
-    login = LoginWindow(lobby_stub)
-    login.show()
+    login_win = LoginWindow(lobby_stub)
+    login_win.show()
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
@@ -300,9 +321,9 @@ if __name__ == '__main__':
         sys.exit(1)
     server_address = sys.argv[1]
 
-    # start the gRPC servicer in a daemon thread
+    # Start the gRPC servicer in the background
     t = threading.Thread(target=serve_grpc, daemon=True)
     t.start()
 
-    # then launch the login GUI
+    # Launch the GUI
     run_gui(server_address)
