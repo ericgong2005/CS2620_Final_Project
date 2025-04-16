@@ -13,9 +13,10 @@ import grpc
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QLineEdit, QPushButton,
     QMessageBox, QDialog, QListWidget, QVBoxLayout, QHBoxLayout,
-    QWidget, QFrame
+    QWidget, QFrame, QFileDialog
 )
 from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QStandardPaths
 
 from Client.ClientGRPC import Client_pb2, Client_pb2_grpc
 from Server.ServerLobbyGRPC import ServerLobby_pb2, ServerLobby_pb2_grpc
@@ -65,16 +66,13 @@ def TimeSync(time_stub, offset_arr, delay_arr, repeats=-1):
 # -------------------------------------------------------------------
 class ClientServicer(Client_pb2_grpc.ClientServicer):
     def CurrentState(self, request, context):
-        # server's ping; do nothing
         return Client_pb2.CurrentStateResponse(response="OK")
 
     def LoadSong(self, request, context):
         pass
 
     def StartSong(self, request, context):
-        # server is telling us to start
         print("Received StartSong RPC; would play at", request.start)
-        # write out the bytes, etc...
         return Client_pb2.StartSongResponse()
 
     def StopSong(self, request, context):
@@ -86,18 +84,14 @@ def serve_grpc():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
     Client_pb2_grpc.add_ClientServicer_to_server(ClientServicer(), server)
 
-    # bind to ephemeral port on all interfaces
     client_servicer_port = server.add_insecure_port("0.0.0.0:0")
     server.start()
 
-    # figure out our reachable IP
     host = socket.gethostbyname(socket.gethostname())
     client_address = f"{host}:{client_servicer_port}"
     print(f"[Client gRPC] listening on {client_address}")
 
-    # signal that we're ready
     _client_ready_evt.set()
-
     server.wait_for_termination()
 
 
@@ -363,7 +357,7 @@ class RoomWindow(QMainWindow):
 
         self.init_room_connection()
         self.init_ui()
-        self.refresh_room()  # show initial
+        self.refresh_room()
 
     def init_room_connection(self):
         channel = grpc.insecure_channel(self.room_address)
@@ -371,7 +365,6 @@ class RoomWindow(QMainWindow):
             grpc.channel_ready_future(channel).result(timeout=5)
             self.room_stub = ServerRoomMusic_pb2_grpc.ServerRoomMusicStub(channel)
 
-            # 1) JOIN the room RPC
             join_req = ServerRoomMusic_pb2.JoinRoomRequest(
                 username=self.username,
                 ClientAddress=self.client_address
@@ -382,7 +375,6 @@ class RoomWindow(QMainWindow):
                                      "Room server refused our JoinRoom request.")
                 return
 
-            # 2) Sync time
             time_chan = grpc.insecure_channel(join_resp.RoomTimeAddress)
             grpc.channel_ready_future(time_chan).result(timeout=5)
             time_stub = ServerRoomTime_pb2_grpc.ServerRoomTimeStub(time_chan)
@@ -392,7 +384,6 @@ class RoomWindow(QMainWindow):
                                              np.array([]),
                                              repeats=5)
 
-            # 3) Send delay stats
             avg_delay = float(delay_arr.mean())
             sync_resp = self.room_stub.SyncStat(
                 ServerRoomMusic_pb2.SyncStatRequest(delay=avg_delay)
@@ -423,13 +414,18 @@ class RoomWindow(QMainWindow):
         self.leave_btn.clicked.connect(self.on_leave)
         left_vbox.addWidget(self.leave_btn)
 
-        # Middle: controls
+        # Middle: playback controls
         middle_vbox = QVBoxLayout()
         middle_vbox.addStretch()
-        # <-- new buttons at bottom of middle section -->
-        self.play_pause_btn = QPushButton("Play/Pause")
-        self.play_pause_btn.clicked.connect(self.on_play_pause)
-        middle_vbox.addWidget(self.play_pause_btn)
+        # Play button
+        self.play_btn = QPushButton("Play")
+        self.play_btn.clicked.connect(self.on_play)
+        middle_vbox.addWidget(self.play_btn)
+        # Pause button
+        self.pause_btn = QPushButton("Pause")
+        self.pause_btn.clicked.connect(self.on_pause)
+        middle_vbox.addWidget(self.pause_btn)
+        # Skip button
         self.skip_btn = QPushButton("Skip Song")
         self.skip_btn.clicked.connect(self.on_skip_song)
         middle_vbox.addWidget(self.skip_btn)
@@ -459,9 +455,13 @@ class RoomWindow(QMainWindow):
         self._poll_timer.timeout.connect(self.refresh_room)
         self._poll_timer.start(2000)
 
-    def on_play_pause(self):
-        QMessageBox.information(self, "Play/Pause",
-                                "If we finished the code it would toggle play/pause of the current song.")
+    def on_play(self):
+        QMessageBox.information(self, "Play",
+                                "If we finished the code it would start playing the current song.")
+
+    def on_pause(self):
+        QMessageBox.information(self, "Pause",
+                                "If we finished the code it would pause the current song.")
 
     def on_skip_song(self):
         QMessageBox.information(self, "Skip Song",
@@ -506,11 +506,30 @@ class RoomWindow(QMainWindow):
         self.parent_lobby.show()
 
     def on_upload(self):
-        QMessageBox.information(self, "Upload", "If this were coded, it would upload a song")
+        # Start the dialog in the user's Downloads folder:
+        downloads_path = QStandardPaths.writableLocation(
+            QStandardPaths.DownloadLocation
+        )
+        # Show only .mp3 files
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select MP3 to Upload",
+            downloads_path,
+            "MP3 Files (*.mp3);;All Files (*)"
+        )
+        if file_path:
+            # For now we just show the path; later you'll actually upload it.
+            QMessageBox.information(
+                self,
+                "File Selected",
+                f"You chose:\n{file_path}"
+            )
+        else:
+            # User cancelled
+            pass
 
 
 def run_gui(server_address):
-    # wait until our client‐servicer is ready
     _client_ready_evt.wait()
 
     channel = grpc.insecure_channel(server_address)
@@ -532,9 +551,7 @@ if __name__ == '__main__':
         print("Usage: python ClientGUI.py ServerHost:Port")
         sys.exit(1)
 
-    # spin up our gRPC servicer on a background thread
     t = threading.Thread(target=serve_grpc, daemon=True)
     t.start()
 
-    # hand off to the Qt main loop
     run_gui(sys.argv[1])
