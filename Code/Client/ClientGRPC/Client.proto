@@ -1,46 +1,59 @@
-// Compile via python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. Client.proto 
+// Compile via:
+//   python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. Client.proto
 
 syntax = "proto3";
 
 package Client;
 
-// Current State
-message CurrentStateRequest {
-}
+// ——————————————————————————————
+// Query current playback/queue state
+// ——————————————————————————————
+message CurrentStateRequest {}
 message CurrentStateResponse {
-    string response = 1;
+  // You can expand this later as needed
+  string response = 1;
 }
 
-// Add Song
-message AddSongRequest {
+// ——————————————————————————————
+// Load a new song into the client
+// ——————————————————————————————
+message LoadSongRequest {
+  // Identifier for the song (e.g. "Maple_Leaf_Rag.mp3")
+  string song_name = 1;
+  // The full raw audio bytes
+  bytes audio_data = 2;
 }
-message AddSongResponse {
+message LoadSongResponse {
+  bool success = 1;
 }
 
-// Delete Song
-message DeleteSongRequest {
-}
-message DeleteSongResponse {
-}
-
-// Start Song
+// ——————————————————————————————
+// Start playback at a given server timestamp and song offset
+// ——————————————————————————————
 message StartSongRequest {
-    double start = 1;
-    bytes AudioData = 2;
+  // The server‐synchronized time (seconds since epoch) when playback should begin
+  double start = 1;
+  // How many seconds into the song to start from
+  double offset = 2;
 }
 message StartSongResponse {
+  bool success = 1;
 }
 
-// Pause Song
-message PauseSongRequest {
+// ——————————————————————————————
+// Stop playback at a given server timestamp
+// ——————————————————————————————
+message StopSongRequest {
+  // The server‐synchronized time (seconds since epoch) when playback should stop
+  double stop = 1;
 }
-message PauseSongResponse {
+message StopSongResponse {
+  bool success = 1;
 }
 
 service Client {
-    rpc CurrentState(CurrentStateRequest) returns (CurrentStateResponse);
-    rpc AddSong(AddSongRequest) returns (AddSongResponse);
-    rpc DeleteSong(DeleteSongRequest) returns (DeleteSongResponse);
-    rpc StartSong(StartSongRequest) returns (StartSongResponse);
-    rpc PauseSong(PauseSongRequest) returns (PauseSongResponse);
+  rpc CurrentState(CurrentStateRequest) returns (CurrentStateResponse);
+  rpc LoadSong    (LoadSongRequest)    returns (LoadSongResponse);
+  rpc StartSong   (StartSongRequest)   returns (StartSongResponse);
+  rpc StopSong    (StopSongRequest)    returns (StopSongResponse);
 }

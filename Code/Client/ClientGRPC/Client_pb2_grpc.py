@@ -39,25 +39,20 @@ class ClientStub(object):
                 request_serializer=Client_dot_ClientGRPC_dot_Client__pb2.CurrentStateRequest.SerializeToString,
                 response_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.CurrentStateResponse.FromString,
                 _registered_method=True)
-        self.AddSong = channel.unary_unary(
-                '/Client.Client/AddSong',
-                request_serializer=Client_dot_ClientGRPC_dot_Client__pb2.AddSongRequest.SerializeToString,
-                response_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.AddSongResponse.FromString,
-                _registered_method=True)
-        self.DeleteSong = channel.unary_unary(
-                '/Client.Client/DeleteSong',
-                request_serializer=Client_dot_ClientGRPC_dot_Client__pb2.DeleteSongRequest.SerializeToString,
-                response_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.DeleteSongResponse.FromString,
+        self.LoadSong = channel.unary_unary(
+                '/Client.Client/LoadSong',
+                request_serializer=Client_dot_ClientGRPC_dot_Client__pb2.LoadSongRequest.SerializeToString,
+                response_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.LoadSongResponse.FromString,
                 _registered_method=True)
         self.StartSong = channel.unary_unary(
                 '/Client.Client/StartSong',
                 request_serializer=Client_dot_ClientGRPC_dot_Client__pb2.StartSongRequest.SerializeToString,
                 response_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.StartSongResponse.FromString,
                 _registered_method=True)
-        self.PauseSong = channel.unary_unary(
-                '/Client.Client/PauseSong',
-                request_serializer=Client_dot_ClientGRPC_dot_Client__pb2.PauseSongRequest.SerializeToString,
-                response_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.PauseSongResponse.FromString,
+        self.StopSong = channel.unary_unary(
+                '/Client.Client/StopSong',
+                request_serializer=Client_dot_ClientGRPC_dot_Client__pb2.StopSongRequest.SerializeToString,
+                response_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.StopSongResponse.FromString,
                 _registered_method=True)
 
 
@@ -70,13 +65,7 @@ class ClientServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def AddSong(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def DeleteSong(self, request, context):
+    def LoadSong(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -88,7 +77,7 @@ class ClientServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def PauseSong(self, request, context):
+    def StopSong(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -102,25 +91,20 @@ def add_ClientServicer_to_server(servicer, server):
                     request_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.CurrentStateRequest.FromString,
                     response_serializer=Client_dot_ClientGRPC_dot_Client__pb2.CurrentStateResponse.SerializeToString,
             ),
-            'AddSong': grpc.unary_unary_rpc_method_handler(
-                    servicer.AddSong,
-                    request_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.AddSongRequest.FromString,
-                    response_serializer=Client_dot_ClientGRPC_dot_Client__pb2.AddSongResponse.SerializeToString,
-            ),
-            'DeleteSong': grpc.unary_unary_rpc_method_handler(
-                    servicer.DeleteSong,
-                    request_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.DeleteSongRequest.FromString,
-                    response_serializer=Client_dot_ClientGRPC_dot_Client__pb2.DeleteSongResponse.SerializeToString,
+            'LoadSong': grpc.unary_unary_rpc_method_handler(
+                    servicer.LoadSong,
+                    request_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.LoadSongRequest.FromString,
+                    response_serializer=Client_dot_ClientGRPC_dot_Client__pb2.LoadSongResponse.SerializeToString,
             ),
             'StartSong': grpc.unary_unary_rpc_method_handler(
                     servicer.StartSong,
                     request_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.StartSongRequest.FromString,
                     response_serializer=Client_dot_ClientGRPC_dot_Client__pb2.StartSongResponse.SerializeToString,
             ),
-            'PauseSong': grpc.unary_unary_rpc_method_handler(
-                    servicer.PauseSong,
-                    request_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.PauseSongRequest.FromString,
-                    response_serializer=Client_dot_ClientGRPC_dot_Client__pb2.PauseSongResponse.SerializeToString,
+            'StopSong': grpc.unary_unary_rpc_method_handler(
+                    servicer.StopSong,
+                    request_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.StopSongRequest.FromString,
+                    response_serializer=Client_dot_ClientGRPC_dot_Client__pb2.StopSongResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -161,7 +145,7 @@ class Client(object):
             _registered_method=True)
 
     @staticmethod
-    def AddSong(request,
+    def LoadSong(request,
             target,
             options=(),
             channel_credentials=None,
@@ -174,36 +158,9 @@ class Client(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/Client.Client/AddSong',
-            Client_dot_ClientGRPC_dot_Client__pb2.AddSongRequest.SerializeToString,
-            Client_dot_ClientGRPC_dot_Client__pb2.AddSongResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def DeleteSong(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/Client.Client/DeleteSong',
-            Client_dot_ClientGRPC_dot_Client__pb2.DeleteSongRequest.SerializeToString,
-            Client_dot_ClientGRPC_dot_Client__pb2.DeleteSongResponse.FromString,
+            '/Client.Client/LoadSong',
+            Client_dot_ClientGRPC_dot_Client__pb2.LoadSongRequest.SerializeToString,
+            Client_dot_ClientGRPC_dot_Client__pb2.LoadSongResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -242,7 +199,7 @@ class Client(object):
             _registered_method=True)
 
     @staticmethod
-    def PauseSong(request,
+    def StopSong(request,
             target,
             options=(),
             channel_credentials=None,
@@ -255,9 +212,9 @@ class Client(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/Client.Client/PauseSong',
-            Client_dot_ClientGRPC_dot_Client__pb2.PauseSongRequest.SerializeToString,
-            Client_dot_ClientGRPC_dot_Client__pb2.PauseSongResponse.FromString,
+            '/Client.Client/StopSong',
+            Client_dot_ClientGRPC_dot_Client__pb2.StopSongRequest.SerializeToString,
+            Client_dot_ClientGRPC_dot_Client__pb2.StopSongResponse.FromString,
             options,
             channel_credentials,
             insecure,
