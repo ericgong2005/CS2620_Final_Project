@@ -73,6 +73,7 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
                                         self.rooms[request.roomname][1] + 1,
                                         int(time.time()),
                                         self.rooms[request.roomname][3])
+        # print(self.users[request.username] + " joined Room " + self.rooms[request.roomname])
         return ServerLobby_pb2.JoinRoomResponse(status=ServerLobby_pb2.Status.SUCCESS)
 
     # Inform you left a room
