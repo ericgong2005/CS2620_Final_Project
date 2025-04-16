@@ -2,6 +2,7 @@ from concurrent import futures
 import grpc
 import sys
 import time
+import socket
 import multiprocessing as mp
 
 from Client.ClientGRPC import Client_pb2, Client_pb2_grpc
@@ -25,8 +26,16 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
         CurrentTime = int(time.time())
         for key in list(self.rooms.keys()):
             if CurrentTime - self.rooms[key][2] > ROOM_TIMEOUT:
-                print(f"{key} has timed out. Removing...")
+                print(f"{key} has timed out. Getting Status")
                 try:
+                    response = self.rooms[key][3].CurrentState(ServerRoomMusic_pb2.CurrentStateRequest())
+                    if len(response.usernames) > 0:
+                        self.rooms[key] = (self.rooms[key][0],
+                                           self.rooms[key][1],
+                                           int(time.time()),
+                                           self.rooms[key][3])
+                        print(f"{key} is confirmed active")
+                        continue
                     self.rooms[key][3].KillRoom(ServerRoomMusic_pb2.KillRoomRequest())
                 except grpc._channel._InactiveRpcError:
                     pass
@@ -39,9 +48,17 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
             return ServerLobby_pb2.JoinLobbyResponse(status=ServerLobby_pb2.Status.MATCH)
         self.users[request.username] = ("Lobby", int(time.time()))
         return ServerLobby_pb2.JoinLobbyResponse(status=ServerLobby_pb2.Status.SUCCESS)
+    
+    # Leave the lobby
+    def LeaveLobby(self, request, context):
+        print(f"LeaveLobby Request with username {request.username}")
+        if request.username in self.users:
+            del self.users[request.username]
+        return ServerLobby_pb2.JoinLobbyResponse(status=ServerLobby_pb2.Status.SUCCESS)
 
     # Get the currently active rooms
     def GetRooms(self, request, context):
+        self.CheckRooms()
         return ServerLobby_pb2.GetRoomsResponse(rooms=list(self.rooms.keys()), 
                                                 addresses=self.GetRoomValue(0))
 
@@ -108,9 +125,13 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print("Usage: python ServerLobby.py Host:Port")
+        print("Usage: python ServerLobby.py Port")
         sys.exit(1)
-    address = sys.argv[1]
+    port = sys.argv[1]
+
+    hostname = socket.gethostbyname(socket.gethostname())
+
+    address = hostname + ":" + port
 
     mp.set_start_method('spawn')
 

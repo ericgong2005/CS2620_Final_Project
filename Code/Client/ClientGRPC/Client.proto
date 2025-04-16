@@ -8,6 +8,7 @@ package Client;
 message CurrentStateRequest {
 }
 message CurrentStateResponse {
+    string response = 1;
 }
 
 // Add Song
@@ -22,22 +23,24 @@ message DeleteSongRequest {
 message DeleteSongResponse {
 }
 
+// Start Song
+message StartSongRequest {
+    double start = 1;
+    bytes AudioData = 2;
+}
+message StartSongResponse {
+}
+
 // Pause Song
 message PauseSongRequest {
 }
 message PauseSongResponse {
 }
 
-// Move Position
-message MovePositionRequest {
-}
-message MovePositionResponse {
-}
-
 service Client {
     rpc CurrentState(CurrentStateRequest) returns (CurrentStateResponse);
     rpc AddSong(AddSongRequest) returns (AddSongResponse);
     rpc DeleteSong(DeleteSongRequest) returns (DeleteSongResponse);
+    rpc StartSong(StartSongRequest) returns (StartSongResponse);
     rpc PauseSong(PauseSongRequest) returns (PauseSongResponse);
-    rpc MovePosition(MovePositionRequest) returns (MovePositionResponse);
 }

@@ -17,6 +17,8 @@ clean:
 	@echo "Removing gRPC generated files"
 	-find . -type f -name "*_pb2.py" -delete
 	-find . -type f -name "*_pb2_grpc.py" -delete
+	@echo "Removing Client generated files"
+	-find . -type d -name 'Client_*' -exec rm -rf {} +
 	make grpc
 
 Server:

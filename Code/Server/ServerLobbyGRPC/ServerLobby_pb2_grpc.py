@@ -39,6 +39,11 @@ class ServerLobbyStub(object):
                 request_serializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinLobbyRequest.SerializeToString,
                 response_deserializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinLobbyResponse.FromString,
                 _registered_method=True)
+        self.LeaveLobby = channel.unary_unary(
+                '/ServerLobby.ServerLobby/LeaveLobby',
+                request_serializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.LeaveLobbyRequest.SerializeToString,
+                response_deserializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.LeaveLobbyResponse.FromString,
+                _registered_method=True)
         self.GetRooms = channel.unary_unary(
                 '/ServerLobby.ServerLobby/GetRooms',
                 request_serializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.GetRoomsRequest.SerializeToString,
@@ -65,6 +70,12 @@ class ServerLobbyServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def JoinLobby(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def LeaveLobby(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -101,6 +112,11 @@ def add_ServerLobbyServicer_to_server(servicer, server):
                     servicer.JoinLobby,
                     request_deserializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinLobbyRequest.FromString,
                     response_serializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinLobbyResponse.SerializeToString,
+            ),
+            'LeaveLobby': grpc.unary_unary_rpc_method_handler(
+                    servicer.LeaveLobby,
+                    request_deserializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.LeaveLobbyRequest.FromString,
+                    response_serializer=Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.LeaveLobbyResponse.SerializeToString,
             ),
             'GetRooms': grpc.unary_unary_rpc_method_handler(
                     servicer.GetRooms,
@@ -150,6 +166,33 @@ class ServerLobby(object):
             '/ServerLobby.ServerLobby/JoinLobby',
             Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinLobbyRequest.SerializeToString,
             Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.JoinLobbyResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def LeaveLobby(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/ServerLobby.ServerLobby/LeaveLobby',
+            Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.LeaveLobbyRequest.SerializeToString,
+            Server_dot_ServerLobbyGRPC_dot_ServerLobby__pb2.LeaveLobbyResponse.FromString,
             options,
             channel_credentials,
             insecure,
