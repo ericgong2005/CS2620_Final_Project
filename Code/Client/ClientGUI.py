@@ -285,7 +285,6 @@ class JoinRoomDialog(QDialog):
             QMessageBox.critical(self, "Error", "Could not find address for that room.")
             return
 
-        # try connecting to the room server only to verify
         channel = grpc.insecure_channel(address)
         try:
             grpc.channel_ready_future(channel).result(timeout=5)
@@ -424,9 +423,16 @@ class RoomWindow(QMainWindow):
         self.leave_btn.clicked.connect(self.on_leave)
         left_vbox.addWidget(self.leave_btn)
 
-        # Middle spacer
+        # Middle: controls
         middle_vbox = QVBoxLayout()
         middle_vbox.addStretch()
+        # <-- new buttons at bottom of middle section -->
+        self.play_pause_btn = QPushButton("Play/Pause")
+        self.play_pause_btn.clicked.connect(self.on_play_pause)
+        middle_vbox.addWidget(self.play_pause_btn)
+        self.skip_btn = QPushButton("Skip Song")
+        self.skip_btn.clicked.connect(self.on_skip_song)
+        middle_vbox.addWidget(self.skip_btn)
 
         # Right: queue
         right_vbox = QVBoxLayout()
@@ -453,6 +459,14 @@ class RoomWindow(QMainWindow):
         self._poll_timer.timeout.connect(self.refresh_room)
         self._poll_timer.start(2000)
 
+    def on_play_pause(self):
+        QMessageBox.information(self, "Play/Pause",
+                                "If we finished the code it would toggle play/pause of the current song.")
+
+    def on_skip_song(self):
+        QMessageBox.information(self, "Skip Song",
+                                "If we finished the code it would skip to the next song in the queue.")
+
     def refresh_room(self):
         if not self.room_stub:
             return
@@ -465,41 +479,31 @@ class RoomWindow(QMainWindow):
             print("Error refreshing room state:", e)
 
     def on_leave(self):
-        # === Debug: verify this handler is firing ===
-        # print(f"[ClientGUI] on_leave() called for user `{self.username}`")
-
-        # 1) Tell the ROOM server we’re leaving
-        if not self.room_stub:
-            print("[ClientGUI] ⚠️ room_stub is None, skipping room.LeaveRoom()")
-        else:
+        print(f"[ClientGUI] on_leave() called for user `{self.username}`")
+        # 1) tell room
+        if self.room_stub:
             try:
                 print(f"[ClientGUI] ➡️ Calling room.LeaveRoom(username={self.username})")
-                resp = self.room_stub.LeaveRoom(
+                self.room_stub.LeaveRoom(
                     ServerRoomMusic_pb2.LeaveRoomRequest(username=self.username)
                 )
-                print(f"[ClientGUI] room.LeaveRoom() response: {resp}")
             except Exception as e:
                 print(f"[ClientGUI] ❌ room.LeaveRoom RPC failed:", e)
-
-        # 2) Then tell the LOBBY server we’ve left the room
+        # 2) tell lobby
         try:
-            # print(f"[ClientGUI] ➡️ Calling lobby.LeaveRoom(username={self.username}, roomname={self.room_name})")
-            lresp = self.lobby_stub.LeaveRoom(
+            print(f"[ClientGUI] ➡️ Calling lobby.LeaveRoom(username={self.username}, roomname={self.room_name})")
+            self.lobby_stub.LeaveRoom(
                 ServerLobby_pb2.LeaveRoomRequest(
                     username=self.username,
                     roomname=self.room_name
                 )
             )
-            # print(f"[ClientGUI] lobby.LeaveRoom() response: {lresp}")
         except Exception as e:
             print(f"[ClientGUI] ❌ lobby.LeaveRoom RPC failed:", e)
-
-        # 3) Tear down UI
+        # 3) UI teardown
         self._poll_timer.stop()
         self.close()
         self.parent_lobby.show()
-
-
 
     def on_upload(self):
         QMessageBox.information(self, "Upload", "If this were coded, it would upload a song")
