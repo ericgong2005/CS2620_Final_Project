@@ -1,6 +1,10 @@
 Todo:
  - Organize into subdirectories
  - Add upload music to serverlobby, and corresponding getmusiclist related commands
+ - Getuserlist for serverroom
+ -add song, start song, stop song, skip song
+
+ client servicer: start: (song chunk, current) and stop: stops current
 
 Time synchronization requirements:
  - Will need accurate shared time

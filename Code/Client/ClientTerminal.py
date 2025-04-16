@@ -157,7 +157,7 @@ def ClientTerminalRoom(RoomStub, ClientQueue, ClientAddress, username):
             print("Goal start at", round(StartTime%1000,5))
             print("Current", round(time.clock_gettime(time.CLOCK_REALTIME)%1000,5))
             MusicFile = ClientQueue.get()
-            player = vlc.MediaPlayer("file://" + os.path.abspath(MusicFile))
+            player = vlc.MediaPlayer(os.path.abspath(MusicFile))
             while time.clock_gettime(time.CLOCK_REALTIME) < StartTime: ()
 
             print("Playing Song!", MusicFile)
