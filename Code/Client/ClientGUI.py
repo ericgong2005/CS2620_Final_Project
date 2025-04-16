@@ -31,6 +31,7 @@ class ClientServicer(Client_pb2_grpc.ClientServicer):
     def StopSong(self, request, context):
         pass
 
+# gRPC server for client callbacks (if needed)
 def serve_grpc():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
     Client_pb2_grpc.add_ClientServicer_to_server(ClientServicer(), server)
@@ -81,14 +82,65 @@ class LoginWindow(QMainWindow):
             QMessageBox.critical(self, "RPC Error", f"Could not reach lobby server:\n{e}")
             return
 
-        # Show appropriate popup
+        # Check response status
         if resp.status == ServerLobby_pb2.Status.MATCH:
             QMessageBox.information(self, "Username Taken",
                                     f"Username '{username}' is already taken.")
         else:
-            QMessageBox.information(self, "Username Available",
-                                    f"Username '{username}' is available!")
-            # TODO: Transition to the next screen here
+            # Proceed to lobby window
+            self.lobby_window = LobbyWindow(self.lobby_stub, username)
+            self.lobby_window.show()
+            self.hide()
+
+class LobbyWindow(QMainWindow):
+    def __init__(self, lobby_stub, username):
+        super().__init__()
+        self.lobby_stub = lobby_stub
+        self.username = username
+        self.init_ui()
+
+    def init_ui(self):
+        self.setWindowTitle("Lobby")
+        self.setGeometry(100, 100, 400, 250)
+
+        # Welcome <username> label
+        self.welcome_label = QLabel(f"Welcome {self.username}", self)
+        self.welcome_label.move(150, 20)
+
+        # Create Room button
+        self.create_btn = QPushButton("Create Room", self)
+        self.create_btn.move(150, 70)
+        self.create_btn.clicked.connect(self.on_create_room)
+
+        # Join Room button
+        self.join_btn = QPushButton("Join Room", self)
+        self.join_btn.move(150, 110)
+        self.join_btn.clicked.connect(self.on_join_room)
+
+        # Exit Lobby button
+        self.exit_btn = QPushButton("Exit Lobby", self)
+        self.exit_btn.move(150, 150)
+        self.exit_btn.clicked.connect(self.on_exit_lobby)
+
+    def on_create_room(self):
+        QMessageBox.information(self, "Create Room",
+                                "If this code was implemented we would have created the room.")
+
+    def on_join_room(self):
+        QMessageBox.information(self, "Join Room",
+                                "If this code was implemented we would have joined a room.")
+
+    def on_exit_lobby(self):
+        # Call LeaveLobby RPC
+        try:
+            req = ServerLobby_pb2.LeaveLobbyRequest(username=self.username)
+            self.lobby_stub.LeaveLobby(req)
+        except grpc.RpcError as e:
+            QMessageBox.critical(self, "RPC Error", f"Could not reach lobby server to leave:\n{e}")
+        # Return to login screen
+        self.login_window = LoginWindow(self.lobby_stub)
+        self.login_window.show()
+        self.close()
 
 def run_gui(server_address):
     # Set up gRPC channel and lobby stub
