@@ -37,6 +37,15 @@ message LeaveRoomResponse {
     Status status = 1;
 }
 
+// Update Sync Stats
+message SyncStatRequest {
+    string username = 1;
+    double delay = 2;
+}
+message SyncStatResponse {
+    Status status = 1;
+}
+
 // Current State
 message CurrentStateRequest {
 }
@@ -72,6 +81,7 @@ service ServerRoomMusic {
     rpc KillRoom(KillRoomRequest) returns (KillRoomResponse);
     rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
     rpc LeaveRoom(LeaveRoomRequest) returns (LeaveRoomResponse);
+    rpc SyncStat(SyncStatRequest) returns (SyncStatResponse);
     rpc CurrentState(CurrentStateRequest) returns (CurrentStateResponse);
     rpc AddSong(AddSongRequest) returns (AddSongResponse);
     rpc DeleteSong(DeleteSongRequest) returns (DeleteSongResponse);

@@ -49,6 +49,11 @@ class ServerRoomMusicStub(object):
                 request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.LeaveRoomRequest.SerializeToString,
                 response_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.LeaveRoomResponse.FromString,
                 _registered_method=True)
+        self.SyncStat = channel.unary_unary(
+                '/ServerRoomMusic.ServerRoomMusic/SyncStat',
+                request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.SyncStatRequest.SerializeToString,
+                response_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.SyncStatResponse.FromString,
+                _registered_method=True)
         self.CurrentState = channel.unary_unary(
                 '/ServerRoomMusic.ServerRoomMusic/CurrentState',
                 request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.CurrentStateRequest.SerializeToString,
@@ -92,6 +97,12 @@ class ServerRoomMusicServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def LeaveRoom(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SyncStat(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -144,6 +155,11 @@ def add_ServerRoomMusicServicer_to_server(servicer, server):
                     servicer.LeaveRoom,
                     request_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.LeaveRoomRequest.FromString,
                     response_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.LeaveRoomResponse.SerializeToString,
+            ),
+            'SyncStat': grpc.unary_unary_rpc_method_handler(
+                    servicer.SyncStat,
+                    request_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.SyncStatRequest.FromString,
+                    response_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.SyncStatResponse.SerializeToString,
             ),
             'CurrentState': grpc.unary_unary_rpc_method_handler(
                     servicer.CurrentState,
@@ -252,6 +268,33 @@ class ServerRoomMusic(object):
             '/ServerRoomMusic.ServerRoomMusic/LeaveRoom',
             Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.LeaveRoomRequest.SerializeToString,
             Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.LeaveRoomResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def SyncStat(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/ServerRoomMusic.ServerRoomMusic/SyncStat',
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.SyncStatRequest.SerializeToString,
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.SyncStatResponse.FromString,
             options,
             channel_credentials,
             insecure,

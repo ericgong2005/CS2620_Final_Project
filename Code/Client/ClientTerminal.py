@@ -1,6 +1,7 @@
 from concurrent import futures
 import grpc
 import sys
+import os
 import time
 import multiprocessing as mp
 import socket
@@ -11,15 +12,17 @@ from Server.ServerLobbyGRPC import ServerLobby_pb2, ServerLobby_pb2_grpc
 from Server.ServerRoomGRPC import (ServerRoomMusic_pb2, ServerRoomMusic_pb2_grpc, 
                             ServerRoomTime_pb2, ServerRoomTime_pb2_grpc)
 
-from Server.ServerConstants import WAIT, MAX_OFFSET_VARIANCE, MAX_REPEATS, COUNTS
+from Server.ServerConstants import WAIT, MAX_OFFSET_VARIANCE, MAX_REPEATS, COUNTS, MAX_GRPC_TRANSMISSION
 
 class ClientServicer(Client_pb2_grpc.ClientServicer):
-    def __init__(self, ClientQueue):
+    def __init__(self, ClientQueue, ClientAddress):
         self.ClientQueue = ClientQueue
+        self.ClientAddress = ClientAddress
 
     # Current State
     def CurrentState(self, request, context):
-        pass
+        print("Recieved Current State Request")
+        return Client_pb2.CurrentStateResponse(response="Success")
 
     # Add Song RPC method
     def AddSong(self, request, context):
@@ -30,11 +33,19 @@ class ClientServicer(Client_pb2_grpc.ClientServicer):
         pass
 
     # Pause Song
-    def PauseSong(self, request, context):
-        pass
+    def StartSong(self, request, context):
+        print("Recieved Start Song Request")
+        self.ClientQueue.put(request.start)
+        path = f"Client/Client_{self.ClientAddress}"
+        os.makedirs(path, exist_ok=True)
+        file = os.path.join(path, "music.mp4")
+        with open(file, 'wb') as f:
+            f.write(request.AudioData)
+        self.ClientQueue.put(file)
+        return Client_pb2.StartSongResponse()
 
-    # Move Position
-    def MovePosition(self, request, context):
+    # Pause Song
+    def PauseSong(self, request, context):
         pass
 '''
 Repeats < 0 will repeat the sync until the variance in the computed clock offset
@@ -92,6 +103,11 @@ def ClientTerminalRoom(RoomStub, ClientQueue, ClientAddress, username):
           "\n\tDelay (ms):", round(np.mean(delay)*1000, 5), 
           "\n\tOffset Variance (ns):", round(np.var(offset)*10**6,5),
           "\n\tDelay Variance (ns):", round(np.var(delay)*10**6,5))
+    response = RoomStub.SyncStat(ServerRoomMusic_pb2.SyncStatRequest(delay=np.mean(delay)))
+    if response.status == ServerRoomMusic_pb2.Status.ERROR:
+        print("Network Too Slow or Room Too Full. Try Again Later.\nReturning to Lobby") 
+        RoomStub.LeaveRoom(ServerRoomMusic_pb2.LeaveRoomRequest(username=username))
+        return
 
     while True:
         command = input(f"Room: Enter a command as {username}: ")
@@ -110,6 +126,37 @@ def ClientTerminalRoom(RoomStub, ClientQueue, ClientAddress, username):
                     "\n\tDelay (ms):", round(np.mean(delay)*1000, 5), 
                     "\n\tOffset Variance (ns):", round(np.var(offset)*10**6,5),
                     "\n\tDelay Variance (ns):", round(np.var(delay)*10**6,5))
+            response = RoomStub.SyncStat(ServerRoomMusic_pb2.SyncStatRequest(delay=np.mean(delay)))
+            if response.status == ServerRoomMusic_pb2.Status.ERROR:
+                print("Network Too Slow or Room Too Full. Try Again Later.\nReturning to Lobby") 
+                RoomStub.LeaveRoom(ServerRoomMusic_pb2.LeaveRoomRequest(username=username))
+                return
+            
+        elif lines[0] == "Start":
+            Start = time.clock_gettime(time.CLOCK_REALTIME)
+            RoomStub.StartSong(ServerRoomMusic_pb2.StartSongRequest())
+            StartTime = ClientQueue.get() + np.mean(offset)
+            print("Goal start at", round(StartTime%1000,5))
+            MusicFile = ClientQueue.get()
+            while time.clock_gettime(time.CLOCK_REALTIME) < StartTime: pass
+
+            print("Playing Song!", MusicFile)
+            print("True start at", round(time.clock_gettime(time.CLOCK_REALTIME)%1000,5))
+            print("Total Delay: ", time.clock_gettime(time.CLOCK_REALTIME) - Start)
+            time.sleep(1)
+            print("Finished Song!")
+
+        elif lines[0] == "Listen":
+            StartTime = ClientQueue.get() + np.mean(offset)
+            print("Goal start at", round(StartTime%1000,5))
+            print("Current", round(time.clock_gettime(time.CLOCK_REALTIME)%1000,5))
+            MusicFile = ClientQueue.get()
+            while time.clock_gettime(time.CLOCK_REALTIME) < StartTime: ()
+
+            print("Playing Song!", MusicFile)
+            print("True start at", round(time.clock_gettime(time.CLOCK_REALTIME)%1000,5))
+            time.sleep(1)
+            print("Finished Song!")
 
         else:
             print("Unknown Command")
@@ -156,13 +203,17 @@ def ClientTerminalStart(LobbyStub, ClientQueue, ClientAddress):
                 if len(lines) < 2:
                     print("Usage: StartJoin <Name>")
                     continue
-                response = LobbyStub.StartRoom(ServerLobby_pb2.StartRoomRequest(name=lines[1]))
+                room = lines[1]
+                response = LobbyStub.StartRoom(ServerLobby_pb2.StartRoomRequest(name=room))
                 if response.status == ServerLobby_pb2.Status.MATCH:
                     print(f"Name Taken.\nCurrent Rooms:\n{response.rooms}")
                 elif response.status == ServerLobby_pb2.Status.ERROR:
                     print(f"Room Failed to Start.\nCurrent Rooms:\n{response.rooms}")
                 else:
                     print(f"Room Made.\nCurrent Rooms:\n{response.rooms}")
+                    room = "Room: " + room
+                    response = LobbyStub.GetRooms(ServerLobby_pb2.GetRoomsRequest())
+                    roomlist = list(response.rooms)
                     RoomAddress = response.addresses[roomlist.index(room)]
                     try:
                         channel = grpc.insecure_channel(RoomAddress)
@@ -229,9 +280,11 @@ if __name__ == '__main__':
 
     ClientQueue = mp.Queue()
 
-    Client = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
-    Client_pb2_grpc.add_ClientServicer_to_server(ClientServicer(ClientQueue), Client)
+    Client = grpc.server(futures.ThreadPoolExecutor(max_workers=1),
+                         options = [('grpc.max_send_message_length', MAX_GRPC_TRANSMISSION),
+                                    ('grpc.max_receive_message_length', MAX_GRPC_TRANSMISSION)])
     ClientAddress =  hostname + ":" + str(Client.add_insecure_port(f"{hostname}:0"))
+    Client_pb2_grpc.add_ClientServicer_to_server(ClientServicer(ClientQueue, ClientAddress), Client)
     
     Client.start()
     print(f"Client started on {ClientAddress}")
