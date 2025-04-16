@@ -6,6 +6,17 @@ Todo:
 
  client servicer: start: (song chunk, current) and stop: stops current
 
+ load
+  - bytes
+  - song name
+
+ start
+  - time to start (system)
+  - offset
+
+pause
+ - time to pause (system)
+
 Time synchronization requirements:
  - Will need accurate shared time
  - Won't need very strict ordering of evernts, we can introduce orchestrated delays to make things work on the client end
