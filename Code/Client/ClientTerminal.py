@@ -161,6 +161,7 @@ def ClientTerminalRoom(RoomStub, ClientQueue, ClientAddress, username):
             while time.clock_gettime(time.CLOCK_REALTIME) < StartTime: ()
 
             print("Playing Song!", MusicFile)
+            player.play()
             print("True start at", round(time.clock_gettime(time.CLOCK_REALTIME)%1000,5))
             time.sleep(5)
             player.stop()
