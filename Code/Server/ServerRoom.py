@@ -56,7 +56,8 @@ class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
     def LeaveRoom(self, request, context):
         if request.username in self.users:
             del self.users[request.username]
-            del self.delays[request.username]
+            # del self.delays[request.username]
+            self.delays.pop(request.username, None)
         print(request.username, "has left", self.name)
         return ServerRoomMusic_pb2.LeaveRoomResponse(status=ServerRoomMusic_pb2.Status.SUCCESS)
     
