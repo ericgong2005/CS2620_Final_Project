@@ -7,6 +7,8 @@ import multiprocessing as mp
 import socket
 import numpy as np
 
+import vlc
+
 from Client.ClientGRPC import Client_pb2, Client_pb2_grpc
 from Server.ServerLobbyGRPC import ServerLobby_pb2, ServerLobby_pb2_grpc
 from Server.ServerRoomGRPC import (ServerRoomMusic_pb2, ServerRoomMusic_pb2_grpc, 
@@ -36,9 +38,9 @@ class ClientServicer(Client_pb2_grpc.ClientServicer):
     def StartSong(self, request, context):
         print("Recieved Start Song Request")
         self.ClientQueue.put(request.start)
-        path = f"Client/Client_{self.ClientAddress}"
+        path = f"Client/Client_{self.ClientAddress.replace(":", "_")}"
         os.makedirs(path, exist_ok=True)
-        file = os.path.join(path, "music.mp4")
+        file = os.path.join(path, "music.mp3")
         with open(file, 'wb') as f:
             f.write(request.AudioData)
         self.ClientQueue.put(file)
@@ -138,12 +140,16 @@ def ClientTerminalRoom(RoomStub, ClientQueue, ClientAddress, username):
             StartTime = ClientQueue.get() + np.mean(offset)
             print("Goal start at", round(StartTime%1000,5))
             MusicFile = ClientQueue.get()
+            player = vlc.MediaPlayer(os.path.abspath(MusicFile))
+            print("Load start at", round(time.clock_gettime(time.CLOCK_REALTIME)%1000,5))
             while time.clock_gettime(time.CLOCK_REALTIME) < StartTime: pass
 
             print("Playing Song!", MusicFile)
+            player.play()
             print("True start at", round(time.clock_gettime(time.CLOCK_REALTIME)%1000,5))
             print("Total Delay: ", time.clock_gettime(time.CLOCK_REALTIME) - Start)
-            time.sleep(1)
+            time.sleep(5)
+            player.stop()
             print("Finished Song!")
 
         elif lines[0] == "Listen":
@@ -151,11 +157,13 @@ def ClientTerminalRoom(RoomStub, ClientQueue, ClientAddress, username):
             print("Goal start at", round(StartTime%1000,5))
             print("Current", round(time.clock_gettime(time.CLOCK_REALTIME)%1000,5))
             MusicFile = ClientQueue.get()
+            player = vlc.MediaPlayer("file://" + os.path.abspath(MusicFile))
             while time.clock_gettime(time.CLOCK_REALTIME) < StartTime: ()
 
             print("Playing Song!", MusicFile)
             print("True start at", round(time.clock_gettime(time.CLOCK_REALTIME)%1000,5))
-            time.sleep(1)
+            time.sleep(5)
+            player.stop()
             print("Finished Song!")
 
         else:
