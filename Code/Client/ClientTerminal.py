@@ -38,7 +38,7 @@ class ClientServicer(Client_pb2_grpc.ClientServicer):
     def StartSong(self, request, context):
         print("Recieved Start Song Request")
         self.ClientQueue.put(request.start)
-        path = f"Client/Client_{self.ClientAddress.replace(":", "_")}"
+        path = f"Client/Client_{self.ClientAddress.replace(':', '_')}"
         os.makedirs(path, exist_ok=True)
         file = os.path.join(path, "music.mp3")
         with open(file, 'wb') as f:
@@ -298,7 +298,7 @@ if __name__ == '__main__':
     print(f"Client started on {ClientAddress}")
 
     ClientTerminalStart(LobbyStub, ClientQueue, ClientAddress)
-        
+    
     Client.stop(0)
 
     print("Client Stopped")
