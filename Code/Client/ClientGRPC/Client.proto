@@ -4,43 +4,47 @@ syntax = "proto3";
 
 package Client;
 
-// Current State
-message CurrentStateRequest {
-}
-message CurrentStateResponse {
-    string response = 1;
-}
-
-// Add Song
-message AddSongRequest {
-}
-message AddSongResponse {
+// Status values
+enum Status {
+  SUCCESS = 1;
+  ERROR = 2;
 }
 
-// Delete Song
-message DeleteSongRequest {
+// Register Room
+message RegisterRoomRequest{
+    string address = 1;
+    string username = 2;
 }
-message DeleteSongResponse {
+message RegisterRoomResponse{
+    Status status = 1;
+}
+
+// Load a song
+message LoadSongRequest{
+    string name = 1;
+    bytes AudioData = 2;
+}
+message LoadSongResponse{
 }
 
 // Start Song
 message StartSongRequest {
-    double start = 1;
-    bytes AudioData = 2;
+    double time = 1;
+    double offset = 2;
 }
 message StartSongResponse {
 }
 
 // Pause Song
 message PauseSongRequest {
+    double time = 1;
 }
 message PauseSongResponse {
 }
 
 service Client {
-    rpc CurrentState(CurrentStateRequest) returns (CurrentStateResponse);
-    rpc AddSong(AddSongRequest) returns (AddSongResponse);
-    rpc DeleteSong(DeleteSongRequest) returns (DeleteSongResponse);
+    rpc RegisterRoom(RegisterRoomRequest) returns (RegisterRoomResponse);
+    rpc LoadSong(LoadSongRequest) returns (LoadSongResponse);
     rpc StartSong(StartSongRequest) returns (StartSongResponse);
     rpc PauseSong(PauseSongRequest) returns (PauseSongResponse);
 }

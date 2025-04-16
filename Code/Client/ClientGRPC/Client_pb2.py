@@ -24,33 +24,29 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1e\x43lient/ClientGRPC/Client.proto\x12\x06\x43lient\"\x15\n\x13\x43urrentStateRequest\"(\n\x14\x43urrentStateResponse\x12\x10\n\x08response\x18\x01 \x01(\t\"\x10\n\x0e\x41\x64\x64SongRequest\"\x11\n\x0f\x41\x64\x64SongResponse\"\x13\n\x11\x44\x65leteSongRequest\"\x14\n\x12\x44\x65leteSongResponse\"4\n\x10StartSongRequest\x12\r\n\x05start\x18\x01 \x01(\x01\x12\x11\n\tAudioData\x18\x02 \x01(\x0c\"\x13\n\x11StartSongResponse\"\x12\n\x10PauseSongRequest\"\x13\n\x11PauseSongResponse2\xd8\x02\n\x06\x43lient\x12I\n\x0c\x43urrentState\x12\x1b.Client.CurrentStateRequest\x1a\x1c.Client.CurrentStateResponse\x12:\n\x07\x41\x64\x64Song\x12\x16.Client.AddSongRequest\x1a\x17.Client.AddSongResponse\x12\x43\n\nDeleteSong\x12\x19.Client.DeleteSongRequest\x1a\x1a.Client.DeleteSongResponse\x12@\n\tStartSong\x12\x18.Client.StartSongRequest\x1a\x19.Client.StartSongResponse\x12@\n\tPauseSong\x12\x18.Client.PauseSongRequest\x1a\x19.Client.PauseSongResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1e\x43lient/ClientGRPC/Client.proto\x12\x06\x43lient\"\x15\n\x13RegisterRoomRequest\"\x16\n\x14RegisterRoomResponse\"2\n\x0fLoadSongRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x11\n\tAudioData\x18\x02 \x01(\x0c\"\x12\n\x10LoadSongResponse\"0\n\x10StartSongRequest\x12\x0c\n\x04time\x18\x01 \x01(\x01\x12\x0e\n\x06offset\x18\x02 \x01(\x01\"\x13\n\x11StartSongResponse\" \n\x10PauseSongRequest\x12\x0c\n\x04time\x18\x01 \x01(\x01\"\x13\n\x11PauseSongResponse2\x96\x02\n\x06\x43lient\x12I\n\x0cRegisterRoom\x12\x1b.Client.RegisterRoomRequest\x1a\x1c.Client.RegisterRoomResponse\x12=\n\x08LoadSong\x12\x17.Client.LoadSongRequest\x1a\x18.Client.LoadSongResponse\x12@\n\tStartSong\x12\x18.Client.StartSongRequest\x1a\x19.Client.StartSongResponse\x12@\n\tPauseSong\x12\x18.Client.PauseSongRequest\x1a\x19.Client.PauseSongResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'Client.ClientGRPC.Client_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_CURRENTSTATEREQUEST']._serialized_start=42
-  _globals['_CURRENTSTATEREQUEST']._serialized_end=63
-  _globals['_CURRENTSTATERESPONSE']._serialized_start=65
-  _globals['_CURRENTSTATERESPONSE']._serialized_end=105
-  _globals['_ADDSONGREQUEST']._serialized_start=107
-  _globals['_ADDSONGREQUEST']._serialized_end=123
-  _globals['_ADDSONGRESPONSE']._serialized_start=125
-  _globals['_ADDSONGRESPONSE']._serialized_end=142
-  _globals['_DELETESONGREQUEST']._serialized_start=144
-  _globals['_DELETESONGREQUEST']._serialized_end=163
-  _globals['_DELETESONGRESPONSE']._serialized_start=165
-  _globals['_DELETESONGRESPONSE']._serialized_end=185
-  _globals['_STARTSONGREQUEST']._serialized_start=187
-  _globals['_STARTSONGREQUEST']._serialized_end=239
-  _globals['_STARTSONGRESPONSE']._serialized_start=241
-  _globals['_STARTSONGRESPONSE']._serialized_end=260
-  _globals['_PAUSESONGREQUEST']._serialized_start=262
-  _globals['_PAUSESONGREQUEST']._serialized_end=280
-  _globals['_PAUSESONGRESPONSE']._serialized_start=282
-  _globals['_PAUSESONGRESPONSE']._serialized_end=301
-  _globals['_CLIENT']._serialized_start=304
-  _globals['_CLIENT']._serialized_end=648
+  _globals['_REGISTERROOMREQUEST']._serialized_start=42
+  _globals['_REGISTERROOMREQUEST']._serialized_end=63
+  _globals['_REGISTERROOMRESPONSE']._serialized_start=65
+  _globals['_REGISTERROOMRESPONSE']._serialized_end=87
+  _globals['_LOADSONGREQUEST']._serialized_start=89
+  _globals['_LOADSONGREQUEST']._serialized_end=139
+  _globals['_LOADSONGRESPONSE']._serialized_start=141
+  _globals['_LOADSONGRESPONSE']._serialized_end=159
+  _globals['_STARTSONGREQUEST']._serialized_start=161
+  _globals['_STARTSONGREQUEST']._serialized_end=209
+  _globals['_STARTSONGRESPONSE']._serialized_start=211
+  _globals['_STARTSONGRESPONSE']._serialized_end=230
+  _globals['_PAUSESONGREQUEST']._serialized_start=232
+  _globals['_PAUSESONGREQUEST']._serialized_end=264
+  _globals['_PAUSESONGRESPONSE']._serialized_start=266
+  _globals['_PAUSESONGRESPONSE']._serialized_end=285
+  _globals['_CLIENT']._serialized_start=288
+  _globals['_CLIENT']._serialized_end=566
 # @@protoc_insertion_point(module_scope)
