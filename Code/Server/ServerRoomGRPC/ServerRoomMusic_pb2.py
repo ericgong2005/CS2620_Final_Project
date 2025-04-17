@@ -24,15 +24,15 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n+Server/ServerRoomGRPC/ServerRoomMusic.proto\x12\x0fServerRoomMusic\"\x11\n\x0fKillRoomRequest\"\x12\n\x10KillRoomResponse\":\n\x0fJoinRoomRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x15\n\rClientAddress\x18\x02 \x01(\t\"T\n\x10JoinRoomResponse\x12\'\n\x06status\x18\x01 \x01(\x0e\x32\x17.ServerRoomMusic.Status\x12\x17\n\x0fRoomTimeAddress\x18\x02 \x01(\t\"$\n\x10LeaveRoomRequest\x12\x10\n\x08username\x18\x01 \x01(\t\"<\n\x11LeaveRoomResponse\x12\'\n\x06status\x18\x01 \x01(\x0e\x32\x17.ServerRoomMusic.Status\"2\n\x0fSyncStatRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\r\n\x05\x64\x65lay\x18\x02 \x01(\x01\";\n\x10SyncStatResponse\x12\'\n\x06status\x18\x01 \x01(\x0e\x32\x17.ServerRoomMusic.Status\"\x15\n\x13\x43urrentStateRequest\")\n\x14\x43urrentStateResponse\x12\x11\n\tusernames\x18\x01 \x03(\t\"6\n\x0e\x41\x64\x64SongRequest\x12\x10\n\x08\x66ilename\x18\x01 \x01(\t\x12\x12\n\naudio_data\x18\x02 \x01(\x0c\"R\n\x0f\x41\x64\x64SongResponse\x12\'\n\x06status\x18\x01 \x01(\x0e\x32\x17.ServerRoomMusic.Status\x12\x16\n\x0equeue_position\x18\x02 \x01(\x05\"\x13\n\x11\x44\x65leteSongRequest\"=\n\x12\x44\x65leteSongResponse\x12\'\n\x06status\x18\x01 \x01(\x0e\x32\x17.ServerRoomMusic.Status\"\x12\n\x10StartSongRequest\"<\n\x11StartSongResponse\x12\'\n\x06status\x18\x01 \x01(\x0e\x32\x17.ServerRoomMusic.Status\"\x12\n\x10PauseSongRequest\"<\n\x11PauseSongResponse\x12\'\n\x06status\x18\x01 \x01(\x0e\x32\x17.ServerRoomMusic.Status*8\n\x06Status\x12\x0b\n\x07PENDING\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\t\n\x05MATCH\x10\x02\x12\t\n\x05\x45RROR\x10\x03\x32\x82\x06\n\x0fServerRoomMusic\x12O\n\x08KillRoom\x12 .ServerRoomMusic.KillRoomRequest\x1a!.ServerRoomMusic.KillRoomResponse\x12O\n\x08JoinRoom\x12 .ServerRoomMusic.JoinRoomRequest\x1a!.ServerRoomMusic.JoinRoomResponse\x12R\n\tLeaveRoom\x12!.ServerRoomMusic.LeaveRoomRequest\x1a\".ServerRoomMusic.LeaveRoomResponse\x12O\n\x08SyncStat\x12 .ServerRoomMusic.SyncStatRequest\x1a!.ServerRoomMusic.SyncStatResponse\x12[\n\x0c\x43urrentState\x12$.ServerRoomMusic.CurrentStateRequest\x1a%.ServerRoomMusic.CurrentStateResponse\x12L\n\x07\x41\x64\x64Song\x12\x1f.ServerRoomMusic.AddSongRequest\x1a .ServerRoomMusic.AddSongResponse\x12U\n\nDeleteSong\x12\".ServerRoomMusic.DeleteSongRequest\x1a#.ServerRoomMusic.DeleteSongResponse\x12R\n\tStartSong\x12!.ServerRoomMusic.StartSongRequest\x1a\".ServerRoomMusic.StartSongResponse\x12R\n\tPauseSong\x12!.ServerRoomMusic.PauseSongRequest\x1a\".ServerRoomMusic.PauseSongResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n+Server/ServerRoomGRPC/ServerRoomMusic.proto\x12\x0fServerRoomMusic\"\x11\n\x0fKillRoomRequest\"\x12\n\x10KillRoomResponse\":\n\x0fJoinRoomRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x15\n\rClientAddress\x18\x02 \x01(\t\"T\n\x10JoinRoomResponse\x12\'\n\x06status\x18\x01 \x01(\x0e\x32\x17.ServerRoomMusic.Status\x12\x17\n\x0fRoomTimeAddress\x18\x02 \x01(\t\"$\n\x10LeaveRoomRequest\x12\x10\n\x08username\x18\x01 \x01(\t\"<\n\x11LeaveRoomResponse\x12\'\n\x06status\x18\x01 \x01(\x0e\x32\x17.ServerRoomMusic.Status\"2\n\x0fSyncStatRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\r\n\x05\x64\x65lay\x18\x02 \x01(\x01\";\n\x10SyncStatResponse\x12\'\n\x06status\x18\x01 \x01(\x0e\x32\x17.ServerRoomMusic.Status\"\x15\n\x13\x43urrentStateRequest\"8\n\x14\x43urrentStateResponse\x12\x11\n\tusernames\x18\x01 \x03(\t\x12\r\n\x05queue\x18\x02 \x03(\t\"6\n\x0e\x41\x64\x64SongRequest\x12\x10\n\x08\x66ilename\x18\x01 \x01(\t\x12\x12\n\naudio_data\x18\x02 \x01(\x0c\"R\n\x0f\x41\x64\x64SongResponse\x12\'\n\x06status\x18\x01 \x01(\x0e\x32\x17.ServerRoomMusic.Status\x12\x16\n\x0equeue_position\x18\x02 \x01(\x05\"\x13\n\x11\x44\x65leteSongRequest\"=\n\x12\x44\x65leteSongResponse\x12\'\n\x06status\x18\x01 \x01(\x0e\x32\x17.ServerRoomMusic.Status\"\x12\n\x10StartSongRequest\"<\n\x11StartSongResponse\x12\'\n\x06status\x18\x01 \x01(\x0e\x32\x17.ServerRoomMusic.Status\"\x12\n\x10PauseSongRequest\"<\n\x11PauseSongResponse\x12\'\n\x06status\x18\x01 \x01(\x0e\x32\x17.ServerRoomMusic.Status*8\n\x06Status\x12\x0b\n\x07PENDING\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\t\n\x05MATCH\x10\x02\x12\t\n\x05\x45RROR\x10\x03\x32\x82\x06\n\x0fServerRoomMusic\x12O\n\x08KillRoom\x12 .ServerRoomMusic.KillRoomRequest\x1a!.ServerRoomMusic.KillRoomResponse\x12O\n\x08JoinRoom\x12 .ServerRoomMusic.JoinRoomRequest\x1a!.ServerRoomMusic.JoinRoomResponse\x12R\n\tLeaveRoom\x12!.ServerRoomMusic.LeaveRoomRequest\x1a\".ServerRoomMusic.LeaveRoomResponse\x12O\n\x08SyncStat\x12 .ServerRoomMusic.SyncStatRequest\x1a!.ServerRoomMusic.SyncStatResponse\x12[\n\x0c\x43urrentState\x12$.ServerRoomMusic.CurrentStateRequest\x1a%.ServerRoomMusic.CurrentStateResponse\x12L\n\x07\x41\x64\x64Song\x12\x1f.ServerRoomMusic.AddSongRequest\x1a .ServerRoomMusic.AddSongResponse\x12U\n\nDeleteSong\x12\".ServerRoomMusic.DeleteSongRequest\x1a#.ServerRoomMusic.DeleteSongResponse\x12R\n\tStartSong\x12!.ServerRoomMusic.StartSongRequest\x1a\".ServerRoomMusic.StartSongResponse\x12R\n\tPauseSong\x12!.ServerRoomMusic.PauseSongRequest\x1a\".ServerRoomMusic.PauseSongResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'Server.ServerRoomGRPC.ServerRoomMusic_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_STATUS']._serialized_start=916
-  _globals['_STATUS']._serialized_end=972
+  _globals['_STATUS']._serialized_start=931
+  _globals['_STATUS']._serialized_end=987
   _globals['_KILLROOMREQUEST']._serialized_start=64
   _globals['_KILLROOMREQUEST']._serialized_end=81
   _globals['_KILLROOMRESPONSE']._serialized_start=83
@@ -52,23 +52,23 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CURRENTSTATEREQUEST']._serialized_start=462
   _globals['_CURRENTSTATEREQUEST']._serialized_end=483
   _globals['_CURRENTSTATERESPONSE']._serialized_start=485
-  _globals['_CURRENTSTATERESPONSE']._serialized_end=526
-  _globals['_ADDSONGREQUEST']._serialized_start=528
-  _globals['_ADDSONGREQUEST']._serialized_end=582
-  _globals['_ADDSONGRESPONSE']._serialized_start=584
-  _globals['_ADDSONGRESPONSE']._serialized_end=666
-  _globals['_DELETESONGREQUEST']._serialized_start=668
-  _globals['_DELETESONGREQUEST']._serialized_end=687
-  _globals['_DELETESONGRESPONSE']._serialized_start=689
-  _globals['_DELETESONGRESPONSE']._serialized_end=750
-  _globals['_STARTSONGREQUEST']._serialized_start=752
-  _globals['_STARTSONGREQUEST']._serialized_end=770
-  _globals['_STARTSONGRESPONSE']._serialized_start=772
-  _globals['_STARTSONGRESPONSE']._serialized_end=832
-  _globals['_PAUSESONGREQUEST']._serialized_start=834
-  _globals['_PAUSESONGREQUEST']._serialized_end=852
-  _globals['_PAUSESONGRESPONSE']._serialized_start=854
-  _globals['_PAUSESONGRESPONSE']._serialized_end=914
-  _globals['_SERVERROOMMUSIC']._serialized_start=975
-  _globals['_SERVERROOMMUSIC']._serialized_end=1745
+  _globals['_CURRENTSTATERESPONSE']._serialized_end=541
+  _globals['_ADDSONGREQUEST']._serialized_start=543
+  _globals['_ADDSONGREQUEST']._serialized_end=597
+  _globals['_ADDSONGRESPONSE']._serialized_start=599
+  _globals['_ADDSONGRESPONSE']._serialized_end=681
+  _globals['_DELETESONGREQUEST']._serialized_start=683
+  _globals['_DELETESONGREQUEST']._serialized_end=702
+  _globals['_DELETESONGRESPONSE']._serialized_start=704
+  _globals['_DELETESONGRESPONSE']._serialized_end=765
+  _globals['_STARTSONGREQUEST']._serialized_start=767
+  _globals['_STARTSONGREQUEST']._serialized_end=785
+  _globals['_STARTSONGRESPONSE']._serialized_start=787
+  _globals['_STARTSONGRESPONSE']._serialized_end=847
+  _globals['_PAUSESONGREQUEST']._serialized_start=849
+  _globals['_PAUSESONGREQUEST']._serialized_end=867
+  _globals['_PAUSESONGRESPONSE']._serialized_start=869
+  _globals['_PAUSESONGRESPONSE']._serialized_end=929
+  _globals['_SERVERROOMMUSIC']._serialized_start=990
+  _globals['_SERVERROOMMUSIC']._serialized_end=1760
 # @@protoc_insertion_point(module_scope)

@@ -87,9 +87,10 @@ class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
 
     # Current State
     def CurrentState(self, request, context):
-        return ServerRoomMusic_pb2.CurrentStateResponse(
-            usernames=list(self.users.keys())
-        )
+       return ServerRoomMusic_pb2.CurrentStateResponse(
+           usernames=list(self.users.keys()),
+           queue=[fname for (fname, _) in self.queue]
+       )
 
     # Add Song
     def AddSong(self, request, context):

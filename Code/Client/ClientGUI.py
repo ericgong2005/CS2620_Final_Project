@@ -418,11 +418,19 @@ class RoomWindow(QMainWindow):
             return
         try:
             resp = self.room_stub.CurrentState(ServerRoomMusic_pb2.CurrentStateRequest())
+
+            # Users
             self.users_list.clear()
             for u in resp.usernames:
                 self.users_list.addItem(u)
+
+            # Queue
+            self.queue_list.clear()
+            for song_name in resp.queue:
+                self.queue_list.addItem(song_name)
+
         except Exception as e:
-            print("Error refreshing room:", e)
+            print("Error refreshing room state:", e)
 
     def on_leave(self):
         try:
