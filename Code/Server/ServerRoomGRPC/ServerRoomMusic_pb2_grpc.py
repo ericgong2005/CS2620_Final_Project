@@ -26,7 +26,10 @@ if _version_not_supported:
 
 
 class ServerRoomMusicStub(object):
-    """Missing associated documentation comment in .proto file."""
+    """-----------------------------------------------------------------
+    Service definition
+    -----------------------------------------------------------------
+    """
 
     def __init__(self, channel):
         """Constructor.
@@ -82,10 +85,14 @@ class ServerRoomMusicStub(object):
 
 
 class ServerRoomMusicServicer(object):
-    """Missing associated documentation comment in .proto file."""
+    """-----------------------------------------------------------------
+    Service definition
+    -----------------------------------------------------------------
+    """
 
     def KillRoom(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Room lifecycle
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -103,7 +110,8 @@ class ServerRoomMusicServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def SyncStat(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Clock‑sync & state
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -115,7 +123,8 @@ class ServerRoomMusicServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def AddSong(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Song control
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -195,7 +204,10 @@ def add_ServerRoomMusicServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class ServerRoomMusic(object):
-    """Missing associated documentation comment in .proto file."""
+    """-----------------------------------------------------------------
+    Service definition
+    -----------------------------------------------------------------
+    """
 
     @staticmethod
     def KillRoom(request,
