@@ -6,6 +6,7 @@ import os
 import socket
 import threading
 import time
+import signal
 import numpy as np
 
 from concurrent import futures
@@ -207,6 +208,15 @@ class LobbyWindow(QMainWindow):
             )
             self.room_win.show()
 
+    def closeEvent(self, event):
+        try:
+            self.lobby_stub.LeaveLobby(
+                ServerLobby_pb2.LeaveLobbyRequest(username=self.username)
+            )
+        except:
+            pass
+        event.accept()
+
 class JoinRoomDialog(QDialog):
     def __init__(self, lobby_stub, parent, username):
         super().__init__(parent)
@@ -314,7 +324,6 @@ class RoomWindow(QMainWindow):
 
     def init_room_connection(self):
         _ = _client_ready_evt.wait()
-        # open channel with larger message limits
         chan = grpc.insecure_channel(self.room_address, options=_GRPC_OPTIONS)
         grpc.channel_ready_future(chan).result(timeout=5)
         self.room_stub = ServerRoomMusic_pb2_grpc.ServerRoomMusicStub(chan)
@@ -347,29 +356,36 @@ class RoomWindow(QMainWindow):
         self.setGeometry(150, 150, 900, 600)
         cen = QWidget(self); self.setCentralWidget(cen)
         hbox = QHBoxLayout()
-        # Left panel
+
+        # Left
         lv = QVBoxLayout()
         lv.addWidget(QLabel("Users In Room"))
         self.users_list = QListWidget(); lv.addWidget(self.users_list, stretch=1)
-        leave = QPushButton("Leave Room"); leave.clicked.connect(self.on_leave); lv.addWidget(leave)
-        # Middle panel
+        leave_btn = QPushButton("Leave Room"); leave_btn.clicked.connect(self.on_leave); lv.addWidget(leave_btn)
+
+        # Middle
         mv = QVBoxLayout(); mv.addStretch()
         play = QPushButton("Play"); play.clicked.connect(self.on_play); mv.addWidget(play)
         pause= QPushButton("Pause"); pause.clicked.connect(self.on_pause); mv.addWidget(pause)
         skip = QPushButton("Skip Song"); skip.clicked.connect(self.on_skip_song); mv.addWidget(skip)
-        # Right panel
+
+        # Right
         rv = QVBoxLayout()
         rv.addWidget(QLabel("Song Queue"))
         self.queue_list = QListWidget(); rv.addWidget(self.queue_list, stretch=1)
         upl = QPushButton("Upload Song mp3"); upl.clicked.connect(self.on_upload); rv.addWidget(upl)
-        # separators
+
         line1 = QFrame(); line1.setFrameShape(QFrame.VLine); line1.setFrameShadow(QFrame.Sunken)
         line2 = QFrame(); line2.setFrameShape(QFrame.VLine); line2.setFrameShadow(QFrame.Sunken)
+
         hbox.addLayout(lv); hbox.addWidget(line1)
         hbox.addLayout(mv); hbox.addWidget(line2)
         hbox.addLayout(rv)
         cen.setLayout(hbox)
-        self.timer = QTimer(self); self.timer.timeout.connect(self.refresh_room); self.timer.start(2000)
+
+        self._poll_timer = QTimer(self)
+        self._poll_timer.timeout.connect(self.refresh_room)
+        self._poll_timer.start(2000)
 
     def on_play(self):
         try:
@@ -398,7 +414,8 @@ class RoomWindow(QMainWindow):
     def on_upload(self):
         dl = QStandardPaths.writableLocation(QStandardPaths.DownloadLocation)
         path, _ = QFileDialog.getOpenFileName(self, "Select MP3", dl, "MP3 Files (*.mp3)")
-        if not path: return
+        if not path:
+            return
         data = open(path, "rb").read()
         try:
             resp = self.room_stub.AddSong(
@@ -418,49 +435,55 @@ class RoomWindow(QMainWindow):
             return
         try:
             resp = self.room_stub.CurrentState(ServerRoomMusic_pb2.CurrentStateRequest())
-
-            # Users
             self.users_list.clear()
             for u in resp.usernames:
                 self.users_list.addItem(u)
-
-            # Queue
-            self.queue_list.clear()
-            for song_name in resp.queue:
-                self.queue_list.addItem(song_name)
-
         except Exception as e:
-            print("Error refreshing room state:", e)
+            print("Error refreshing room:", e)
 
     def on_leave(self):
+        # Called when the "Leave Room" button is pressed
         try:
-            self.room_stub.LeaveRoom(ServerRoomMusic_pb2.LeaveRoomRequest(username=self.username))
+            self.room_stub.LeaveRoom(
+                ServerRoomMusic_pb2.LeaveRoomRequest(username=self.username)
+            )
         except:
             pass
         try:
-            self.lobby_stub.LeaveRoom(ServerLobby_pb2.LeaveRoomRequest(
-                username=self.username, roomname=self.room_name
-            ))
+            self.lobby_stub.LeaveRoom(
+                ServerLobby_pb2.LeaveRoomRequest(
+                    username=self.username,
+                    roomname=self.room_name
+                )
+            )
         except:
             pass
-        self.timer.stop()
+        self._poll_timer.stop()
         self.close()
         self.parent_lobby.show()
 
+    def closeEvent(self, event):
+        # Clean up if window is closed directly
+        self.on_leave()
+        event.accept()
+
 def run_gui(server_address):
-    _ = _client_ready_evt.wait()
+    app = QApplication(sys.argv)
+    signal.signal(signal.SIGINT, lambda sig, fr: app.quit())
+
+    _client_ready_evt.wait()
     chan = grpc.insecure_channel(server_address, options=_GRPC_OPTIONS)
     grpc.channel_ready_future(chan).result(timeout=5)
-    lobby = ServerLobby_pb2_grpc.ServerLobbyStub(chan)
+    lobby_stub = ServerLobby_pb2_grpc.ServerLobbyStub(chan)
 
-    app = QApplication(sys.argv)
-    wnd = LoginWindow(lobby, client_address)
-    wnd.show()
+    login = LoginWindow(lobby_stub, client_address)
+    login.show()
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         print("Usage: python ClientGUI.py ServerHost:Port")
         sys.exit(1)
+
     threading.Thread(target=serve_grpc, daemon=True).start()
     run_gui(sys.argv[1])
