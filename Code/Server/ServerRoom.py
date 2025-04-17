@@ -186,7 +186,13 @@ def startServerRoom(lobby_queue, name):
     print("ServerRoomTime started on", time_addr)
 
     # Music server
-    music_srv = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
+    music_srv = grpc.server(
+        futures.ThreadPoolExecutor(max_workers=1),
+        options=[
+        ('grpc.max_send_message_length', 200 * 1024 * 1024),
+        ('grpc.max_receive_message_length', 200 * 1024 * 1024),
+        ]
+    )
     ServerRoomMusic_pb2_grpc.add_ServerRoomMusicServicer_to_server(
         ServerRoomMusicServicer(time_addr, name, music_srv),
         music_srv
