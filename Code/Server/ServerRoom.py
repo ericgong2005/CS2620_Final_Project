@@ -168,6 +168,7 @@ class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
     # Inform you left a room
     def LeaveRoom(self, request, context):
         if request.username in self.users:
+            self.users[request.username].Leave(Client_pb2.LeaveRequest())
             del self.users[request.username]
         if request.username in self.delays:
             del self.delays[request.username]

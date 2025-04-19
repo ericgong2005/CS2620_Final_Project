@@ -40,9 +40,23 @@ message StopSongResponse {
     bool Missing = 1;
 }
 
+// Leave
+message LeaveRequest {
+}
+message LeaveResponse {
+}
+
+// Heartbeat
+message HeartbeatRequest {
+}
+message HeartbeatResponse {
+}
+
 service Client {
     rpc RegisterRoom(RegisterRoomRequest) returns (RegisterRoomResponse);
     rpc AddSong(AddSongRequest) returns (AddSongResponse);
     rpc StartSong(StartSongRequest) returns (StartSongResponse);
     rpc StopSong(StopSongRequest) returns (StopSongResponse);
+    rpc Leave(LeaveRequest) returns (LeaveResponse);
+    rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
 }

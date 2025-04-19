@@ -54,6 +54,16 @@ class ClientStub(object):
                 request_serializer=Client_dot_ClientGRPC_dot_Client__pb2.StopSongRequest.SerializeToString,
                 response_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.StopSongResponse.FromString,
                 _registered_method=True)
+        self.Leave = channel.unary_unary(
+                '/Client.Client/Leave',
+                request_serializer=Client_dot_ClientGRPC_dot_Client__pb2.LeaveRequest.SerializeToString,
+                response_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.LeaveResponse.FromString,
+                _registered_method=True)
+        self.Heartbeat = channel.unary_unary(
+                '/Client.Client/Heartbeat',
+                request_serializer=Client_dot_ClientGRPC_dot_Client__pb2.HeartbeatRequest.SerializeToString,
+                response_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.HeartbeatResponse.FromString,
+                _registered_method=True)
 
 
 class ClientServicer(object):
@@ -83,6 +93,18 @@ class ClientServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Leave(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Heartbeat(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ClientServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -105,6 +127,16 @@ def add_ClientServicer_to_server(servicer, server):
                     servicer.StopSong,
                     request_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.StopSongRequest.FromString,
                     response_serializer=Client_dot_ClientGRPC_dot_Client__pb2.StopSongResponse.SerializeToString,
+            ),
+            'Leave': grpc.unary_unary_rpc_method_handler(
+                    servicer.Leave,
+                    request_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.LeaveRequest.FromString,
+                    response_serializer=Client_dot_ClientGRPC_dot_Client__pb2.LeaveResponse.SerializeToString,
+            ),
+            'Heartbeat': grpc.unary_unary_rpc_method_handler(
+                    servicer.Heartbeat,
+                    request_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.HeartbeatRequest.FromString,
+                    response_serializer=Client_dot_ClientGRPC_dot_Client__pb2.HeartbeatResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -215,6 +247,60 @@ class Client(object):
             '/Client.Client/StopSong',
             Client_dot_ClientGRPC_dot_Client__pb2.StopSongRequest.SerializeToString,
             Client_dot_ClientGRPC_dot_Client__pb2.StopSongResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def Leave(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/Client.Client/Leave',
+            Client_dot_ClientGRPC_dot_Client__pb2.LeaveRequest.SerializeToString,
+            Client_dot_ClientGRPC_dot_Client__pb2.LeaveResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def Heartbeat(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/Client.Client/Heartbeat',
+            Client_dot_ClientGRPC_dot_Client__pb2.HeartbeatRequest.SerializeToString,
+            Client_dot_ClientGRPC_dot_Client__pb2.HeartbeatResponse.FromString,
             options,
             channel_credentials,
             insecure,

@@ -50,10 +50,15 @@ def ClientTerminalRoom(RoomStub, ClientAddress, username):
             print(request.success)
 
         elif lines[0] == "Add":
-            file = "Server/Music/MapleLeafRag.mp3"
+            if lines[1] == "Maple":
+                file = "../Music/MapleLeafRag.mp3"
+                name = "Maple Leaf Rag"
+            else:
+                file = "../Music/SweeterVermouth.mp3"
+                name = "Sweeter Vermouth"
             with open(file, "rb") as f:
                 AudioBytes = f.read()
-            request = RoomStub.AddSong(ServerRoomMusic_pb2.AddSongRequest(name="Maple Leaf Rag", AudioData=AudioBytes))
+            request = RoomStub.AddSong(ServerRoomMusic_pb2.AddSongRequest(name=name, AudioData=AudioBytes))
             print(request.success)
 
         elif lines[0] == "State":
@@ -71,7 +76,7 @@ def ClientTerminalStart(LobbyStub, ClientAddress):
         username = None
         while username == None:
             username = input("Username: ")
-            response = LobbyStub.JoinLobby(ServerLobby_pb2.JoinLobbyRequest(username=username))
+            response = LobbyStub.JoinLobby(ServerLobby_pb2.JoinLobbyRequest(username=username, MusicPlayerAddress=ClientAddress))
             if response.status == ServerLobby_pb2.Status.MATCH:
                 print("Username Taken")
                 username = None

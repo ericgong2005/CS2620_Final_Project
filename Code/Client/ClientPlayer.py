@@ -20,10 +20,11 @@ from Server.ServerRoomGRPC import (ServerRoomMusic_pb2, ServerRoomMusic_pb2_grpc
 from Server.ServerConstants import (WAIT, OFFSET_VARIANCE, OFFSET_COUNTS, DELAY_COUNTS, MAX_GRPC_TRANSMISSION, CLIENT_WORKERS)
 
 class Command(IntEnum):
-    PAUSE = 0   
-    START = 1
-    LOAD = 2  
-    SYNC = 3
+    LEAVE = 0
+    PAUSE = 1
+    START = 2
+    LOAD = 3 
+    SYNC = 4
 
 def TimeSync(PlayerQueue, Event, Counter, TimeAddress, RoomAddress, Username, ThreadConfirm, Terminate):
     print("Starting New TimeSync")
@@ -144,6 +145,16 @@ class ClientServicer(Client_pb2_grpc.ClientServicer):
     def StopSong(self, request, context):
         self.PlayerQueue.put((Command.PAUSE, next(self.Counter), request.time))
         return Client_pb2.StopSongResponse()
+    
+    # Left Room
+    def Leave(self, request, context):
+        self.PlayerQueue.put((Command.LEAVE, next(self.Counter)))
+        return Client_pb2.LeaveResponse()
+    
+    # Heartbeat
+    def Heartbeat(self, request, context):
+        return Client_pb2.HeartbeatResponse()
+
 
 def ClientPlayerStart(ClientPlayer, PlayerAddress, Terminate):
     PlayerQueue = queue.Queue()
@@ -205,6 +216,14 @@ def ClientPlayerStart(ClientPlayer, PlayerAddress, Terminate):
 
         if request[0] == Command.SYNC:
             Offset = request[2]
+        
+        if request[0] == Command.LEAVE:
+            if CurrentSong != None:
+                CurrentSong.release()
+            Songs = {}
+            CurrentSong = None
+            CurrentSongName = None
+
 
     ClientPlayer.stop(0)
 
