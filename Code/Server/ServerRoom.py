@@ -37,9 +37,11 @@ def MusicPlayer(Servicer):
             print("Recieved action", action)
         except queue.Empty:
             if Servicer.playing and position + time.clock_gettime(time.CLOCK_REALTIME) - PrevTime > Servicer.CurrentSong[2]: # Song over
-                Servicer.CurrentSong = Servicer.SongQueue.get()
-                position = 0
-                action = Command.START
+                Servicer.CurrentSong = None
+                Servicer.playing = False
+                action = None
+                if not Servicer.SongQueue.empty():
+                    action = Command.START
             else:
                 continue
 
@@ -126,8 +128,21 @@ class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
         self.Terminate.set()
         return ServerRoomMusic_pb2.KillRoomResponse()
     
+    # Ping all users
+    def Ping(self):
+        print("Pinging all Users")
+        
+        for user in self.users.keys():
+            try:
+                self.users[user].Heartbeat(Client_pb2.HeartbeatRequest())
+            except grpc._channel._InactiveRpcError:
+                self.inactive.put(user)
+                print("Missed", user)
+        print("Room Ping to", list(self.users.keys()))
+    
     # Remove Inactive Users
     def RemoveInactive(self):
+        self.Ping()
         while not self.inactive.empty():
             current = self.inactive.get()
             if current in self.users:
@@ -141,6 +156,8 @@ class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
     # Try to join a room
     def JoinRoom(self, request, context):
         print("Join Room Request: ", request.username, request.ClientMusicAddress)
+        if len(self.users) > 0:
+            self.RemoveInactive()
         # Establish stub to user
         UserStub = None
         try:
@@ -160,7 +177,36 @@ class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
             print("Failed to start TimeSync for", request.username)
             return ServerRoomMusic_pb2.JoinRoomResponse(success=False, RoomTimeAddress=self.TimeAddress)
         
+        print("TimeSync Start Success for", request.username)
         self.users[request.username] = UserStub
+
+        # Check if joined late
+        
+        if self.CurrentSong != None or not self.SongQueue.empty():
+            print(f"{request.username} Joined Late, Sending Songs")
+            name = None
+            AudioData = None
+            SongList = None
+            with self.SongQueue.mutex:
+                if self.CurrentSong != None:
+                    name, AudioData, _duration = self.CurrentSong
+                SongList = list(self.SongQueue.queue)
+            
+            print("Sending Current Song", name, AudioData)
+            if name != None:
+                UserStub.AddSong(Client_pb2.AddSongRequest(name=name, AudioData=AudioData))
+                try:
+                    UserStub.AddSong(Client_pb2.AddSongRequest(name=name, AudioData=AudioData))
+                except grpc._channel._InactiveRpcError:
+                    return ServerRoomMusic_pb2.JoinRoomResponse(success=False, RoomTimeAddress=self.TimeAddress)
+            
+            print("Sending Remaining Songs")
+            for song in SongList:
+                UserStub.AddSong(Client_pb2.AddSongRequest(name=song[0], AudioData=song[1]))
+                try:
+                    UserStub.AddSong(Client_pb2.AddSongRequest(name=song[0], AudioData=song[1]))
+                except grpc._channel._InactiveRpcError:
+                    return ServerRoomMusic_pb2.JoinRoomResponse(success=False, RoomTimeAddress=self.TimeAddress)
         
         print(request.username, "has successfully joined", self.name)
         return ServerRoomMusic_pb2.JoinRoomResponse(success=True, RoomTimeAddress=self.TimeAddress)
@@ -279,7 +325,7 @@ def startServerRoom(LobbyQueue, Name):
     print(f"ServerRoomTime started on {TimeAddress}")
 
     # Start ServerRoomMusic gRPC server.
-    ServerRoomMusic = grpc.server(futures.ThreadPoolExecutor(max_workers=1),
+    ServerRoomMusic = grpc.server(futures.ThreadPoolExecutor(max_workers=ROOM_WORKERS),
                                   options = [('grpc.max_send_message_length', MAX_GRPC_TRANSMISSION),
                                     ('grpc.max_receive_message_length', MAX_GRPC_TRANSMISSION)])
     RoomAddress = hostname + ":" + str(ServerRoomMusic.add_insecure_port(f"{hostname}:0"))

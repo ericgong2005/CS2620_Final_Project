@@ -1,9 +1,10 @@
+import signal
+import atexit
 import sys
 import os
 import socket
 import threading
 import time
-import numpy as np
 
 from concurrent import futures
 import grpc
@@ -24,6 +25,22 @@ from Server.ServerRoomGRPC import (
     ServerRoomTime_pb2, ServerRoomTime_pb2_grpc
 )
 from Server.ServerConstants import MAX_GRPC_TRANSMISSION
+
+
+#Shutdown Handler
+def TerminationHandler(TerminateCommand):
+    def _handle_signal(signum, frame):
+        TerminateCommand.set()
+        sys.exit(0)
+    signal.signal(signal.SIGINT, _handle_signal)
+    signal.signal(signal.SIGTERM, _handle_signal)
+
+    atexit.register(TerminateCommand.set)
+
+    def _excepthook(exc_type, exc_value, exc_tb):
+        TerminateCommand.set()
+        sys.__excepthook__(exc_type, exc_value, exc_tb)
+    sys.excepthook = _excepthook
 
 # -------------------------------------------------------------------
 # Qt GUI Windows
@@ -256,7 +273,7 @@ class RoomWindow(QMainWindow):
             return
 
     def init_ui(self):
-        self.setWindowTitle(f"Room: {self.room_name}")
+        self.setWindowTitle(self.room_name)
         self.setGeometry(150, 150, 900, 600)
         cen = QWidget(self); self.setCentralWidget(cen)
         hbox = QHBoxLayout()
@@ -381,10 +398,14 @@ def run_gui(server_address, TerminateCommand):
     Thread.start()
 
     app = QApplication(sys.argv)
+    app.aboutToQuit.connect(TerminateCommand.set)
     wnd = LoginWindow(lobby, ClientPlayerAddress)
     wnd.show()
 
-    return app.exec_()
+    try:
+        return app.exec_()
+    finally:
+        TerminateCommand.set()
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
@@ -392,5 +413,9 @@ if __name__ == '__main__':
         sys.exit(1)
     
     TerminateCommand = threading.Event()
-    run_gui(sys.argv[1], TerminateCommand)
-    TerminateCommand.set()
+    TerminationHandler(TerminateCommand)
+    try:
+        run_gui(sys.argv[1], TerminateCommand)
+    finally:
+        TerminateCommand.set()
+    sys.exit(0)

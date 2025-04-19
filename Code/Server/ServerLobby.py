@@ -23,48 +23,36 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
         return [item[index] for item in self.rooms.values()]
     
     def CheckUsers(self):
-        CurrentTime = int(time.time())
+        print("Checking Users", list(self.users.keys()))
         for key in list(self.users.keys()):
-            if CurrentTime - self.rooms[key][1] > ROOM_TIMEOUT:
-                print(f"User {key} has timed out. Heartbeat")
-                try:
-                    self.users[key][2].Heartbeat(Client_pb2.HeartbeatRequest())
-                    self.users[key] = (self.users[key][0], int(time.time()), self.users[key][2])
-                    continue
-                except grpc._channel._InactiveRpcError:
-                    pass
-
-                if self.users[key][1] != "Lobby":
-                    try:
-                        self.rooms[self.users[key][1]][3].LeaveRoom(ServerRoomMusic_pb2.LeaveRoomRequest(username=key))
-                    except Exception as e:
-                        print("While deleting user", e)
+            print(f"User {key} Heartbeat")
+            try:
+                self.users[key][2].Heartbeat(Client_pb2.HeartbeatRequest())
+                self.users[key] = (self.users[key][0], int(time.time()), self.users[key][2])
+            except grpc.RpcError:
                 del self.users[key]
     
     def CheckRooms(self):
-        CurrentTime = int(time.time())
         for key in list(self.rooms.keys()):
-            if CurrentTime - self.rooms[key][2] > ROOM_TIMEOUT:
-                print(f"{key} has timed out. Getting Status")
-                try:
-                    response = self.rooms[key][3].CurrentState(ServerRoomMusic_pb2.CurrentStateRequest())
-                    if len(response.usernames) > 0:
-                        self.rooms[key] = (self.rooms[key][0],
-                                           self.rooms[key][1],
-                                           int(time.time()),
-                                           self.rooms[key][3])
-                        print(f"{key} is confirmed active with users", response.usernames)
-                        continue
-                    self.rooms[key][3].KillRoom(ServerRoomMusic_pb2.KillRoomRequest())
-                    print(f"Killed {key}")
-                except grpc._channel._InactiveRpcError:
-                    pass
+            print(f"Getting Status of {key}")
+            try:
+                response = self.rooms[key][3].CurrentState(ServerRoomMusic_pb2.CurrentStateRequest())
+                if len(response.usernames) > 0:
+                    self.rooms[key] = (self.rooms[key][0],
+                                        self.rooms[key][1],
+                                        int(time.time()),
+                                        self.rooms[key][3])
+                    print(f"{key} is confirmed active with users", response.usernames)
+                    continue
+                self.rooms[key][3].KillRoom(ServerRoomMusic_pb2.KillRoomRequest())
+                print(f"Killed {key}")
+            except grpc.RpcError:
                 del self.rooms[key]
 
     # Join the lobby
     def JoinLobby(self, request, context):
         print(f"JoinLobby Request with username {request.username}")
-        # self.CheckUsers()
+        self.CheckUsers()
 
         if request.username in self.users:
             print("Duplicate User Rejected:", request.username)
@@ -99,6 +87,7 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
 
     # Try to join a room
     def JoinRoom(self, request, context):
+        print("Join Room Request on", request.roomname, "given", self.GetRoomValue(0))
         self.CheckRooms()
         
         if request.roomname not in self.rooms:

@@ -1,8 +1,8 @@
-# Number of seconds before a room times out due to inactivity
-ROOM_TIMEOUT = 5
+# Number of seconds before a room or user times out
+ROOM_TIMEOUT = 1
 
 # Maximum size for grpc
-MAX_GRPC_TRANSMISSION = 100 * 1024 * 1024 # 100 MB
+MAX_GRPC_TRANSMISSION = 200 * 1024 * 1024 # 200 MB
 
 # TimeSync Parameters
 WAIT = 0.1
@@ -19,7 +19,7 @@ CONSTANT_PROCCESS_TIME = 0.1 # Add some padding time for processing
 REACTION_TIME = 0.5 # 1 action per REACTION_TIME seconds, no actions in the last REACTION_TIME seconds of a song
 
 MAX_SONG_QUEUE = 10 # Maximum number of allowed songs
-SONG_QUEUE_UPDATE = 0.5 # Time for song queue updates
+SONG_QUEUE_UPDATE = 1 # Time for song queue updates
 
 # Multithreading
 CLIENT_WORKERS = 2 # Number of worker threads for the client

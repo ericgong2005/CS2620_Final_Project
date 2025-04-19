@@ -195,8 +195,7 @@ def ClientPlayerStart(ClientPlayer, PlayerAddress, Terminate):
                 continue
             Start = request[2] + Offset
             while time.clock_gettime(time.CLOCK_REALTIME) < Start: pass
-            if request[4] != 0:
-                CurrentSong.set_time(int(request[4]*1000))
+            CurrentSong.set_time(int(request[4]*1000))
             CurrentSong.play()
             print("True start at", round(time.clock_gettime(time.CLOCK_REALTIME)%1000,5))
             print("Want start at", round(Start%1000,5))
@@ -229,7 +228,7 @@ def ClientPlayerStart(ClientPlayer, PlayerAddress, Terminate):
 
     VLCInstance.release()
 
-    print("Client Stopped")
+    print("Client Player Stopped")
 
     sys.exit(0)
     
