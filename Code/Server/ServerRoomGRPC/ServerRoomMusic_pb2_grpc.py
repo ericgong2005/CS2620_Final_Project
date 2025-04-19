@@ -64,10 +64,10 @@ class ServerRoomMusicStub(object):
                 request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.AddSongRequest.SerializeToString,
                 response_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.AddSongResponse.FromString,
                 _registered_method=True)
-        self.DeleteSong = channel.unary_unary(
-                '/ServerRoomMusic.ServerRoomMusic/DeleteSong',
-                request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.DeleteSongRequest.SerializeToString,
-                response_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.DeleteSongResponse.FromString,
+        self.SkipSong = channel.unary_unary(
+                '/ServerRoomMusic.ServerRoomMusic/SkipSong',
+                request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.SkipSongRequest.SerializeToString,
+                response_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.SkipSongResponse.FromString,
                 _registered_method=True)
         self.StartSong = channel.unary_unary(
                 '/ServerRoomMusic.ServerRoomMusic/StartSong',
@@ -120,7 +120,7 @@ class ServerRoomMusicServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def DeleteSong(self, request, context):
+    def SkipSong(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -171,10 +171,10 @@ def add_ServerRoomMusicServicer_to_server(servicer, server):
                     request_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.AddSongRequest.FromString,
                     response_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.AddSongResponse.SerializeToString,
             ),
-            'DeleteSong': grpc.unary_unary_rpc_method_handler(
-                    servicer.DeleteSong,
-                    request_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.DeleteSongRequest.FromString,
-                    response_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.DeleteSongResponse.SerializeToString,
+            'SkipSong': grpc.unary_unary_rpc_method_handler(
+                    servicer.SkipSong,
+                    request_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.SkipSongRequest.FromString,
+                    response_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.SkipSongResponse.SerializeToString,
             ),
             'StartSong': grpc.unary_unary_rpc_method_handler(
                     servicer.StartSong,
@@ -360,7 +360,7 @@ class ServerRoomMusic(object):
             _registered_method=True)
 
     @staticmethod
-    def DeleteSong(request,
+    def SkipSong(request,
             target,
             options=(),
             channel_credentials=None,
@@ -373,9 +373,9 @@ class ServerRoomMusic(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ServerRoomMusic.ServerRoomMusic/DeleteSong',
-            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.DeleteSongRequest.SerializeToString,
-            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.DeleteSongResponse.FromString,
+            '/ServerRoomMusic.ServerRoomMusic/SkipSong',
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.SkipSongRequest.SerializeToString,
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.SkipSongResponse.FromString,
             options,
             channel_credentials,
             insecure,

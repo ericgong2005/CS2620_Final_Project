@@ -4,14 +4,6 @@ syntax = "proto3";
 
 package ServerRoomMusic;
 
-// Status values
-enum Status {
-  PENDING = 0;
-  SUCCESS = 1;
-  MATCH = 2;
-  ERROR = 3;
-}
-
 // Kill Room
 message KillRoomRequest {
 
@@ -22,10 +14,10 @@ message KillRoomResponse {
 
 message JoinRoomRequest {
     string username = 1;
-    string ClientAddress = 2;
+    string ClientMusicAddress = 2;
 }
 message JoinRoomResponse {
-    Status status = 1;
+    bool status = 1;
     string RoomTimeAddress = 2;
 }
 
@@ -34,7 +26,7 @@ message LeaveRoomRequest {
     string username = 1;
 }
 message LeaveRoomResponse {
-    Status status = 1;
+    bool status = 1;
 }
 
 // Update Sync Stats
@@ -43,7 +35,6 @@ message SyncStatRequest {
     double delay = 2;
 }
 message SyncStatResponse {
-    Status status = 1;
 }
 
 // Current State
@@ -51,30 +42,39 @@ message CurrentStateRequest {
 }
 message CurrentStateResponse {
     repeated string usernames = 1;
+    repeated string MusicList = 2;
 }
 
 // Add Song
 message AddSongRequest {
+    string name = 1;
+    bytes AudioData = 2;
 }
 message AddSongResponse {
+    bool success = 1;
+    repeated string usernames = 2;
+    repeated string MusicList = 3;
 }
 
-// Delete Song
-message DeleteSongRequest {
+// Skip Song
+message SkipSongRequest {
 }
-message DeleteSongResponse {
+message SkipSongResponse {
+    bool success = 1;
 }
 
 // Start Song
 message StartSongRequest {
 }
 message StartSongResponse {
+    bool success = 1;
 }
 
 // Pause Song
 message PauseSongRequest {
 }
 message PauseSongResponse {
+    bool success = 1;
 }
 
 service ServerRoomMusic {
@@ -84,7 +84,7 @@ service ServerRoomMusic {
     rpc SyncStat(SyncStatRequest) returns (SyncStatResponse);
     rpc CurrentState(CurrentStateRequest) returns (CurrentStateResponse);
     rpc AddSong(AddSongRequest) returns (AddSongResponse);
-    rpc DeleteSong(DeleteSongRequest) returns (DeleteSongResponse);
+    rpc SkipSong(SkipSongRequest) returns (SkipSongResponse);
     rpc StartSong(StartSongRequest) returns (StartSongResponse);
     rpc PauseSong(PauseSongRequest) returns (PauseSongResponse);
 }

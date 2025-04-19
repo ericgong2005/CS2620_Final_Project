@@ -1,3 +1,6 @@
+Notes:
+ - Client MusicPlayer can be multithreaded, so that the start/stop options can be handled concurrently with the file saves, which might take longer. The queue ensures that the messages from the GRPC to the main loop are properly ordered.
+
 Todo:
  - Organize into subdirectories
  - Add upload music to serverlobby, and corresponding getmusiclist related commands
