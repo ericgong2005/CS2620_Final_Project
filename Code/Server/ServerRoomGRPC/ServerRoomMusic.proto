@@ -17,7 +17,7 @@ message JoinRoomRequest {
     string ClientMusicAddress = 2;
 }
 message JoinRoomResponse {
-    bool status = 1;
+    bool success = 1;
     string RoomTimeAddress = 2;
 }
 
@@ -26,7 +26,7 @@ message LeaveRoomRequest {
     string username = 1;
 }
 message LeaveRoomResponse {
-    bool status = 1;
+    bool success = 1;
 }
 
 // Update Sync Stats
@@ -52,8 +52,6 @@ message AddSongRequest {
 }
 message AddSongResponse {
     bool success = 1;
-    repeated string usernames = 2;
-    repeated string MusicList = 3;
 }
 
 // Skip Song
@@ -70,10 +68,10 @@ message StartSongResponse {
     bool success = 1;
 }
 
-// Pause Song
-message PauseSongRequest {
+// Stop Song
+message StopSongRequest {
 }
-message PauseSongResponse {
+message StopSongResponse {
     bool success = 1;
 }
 
@@ -86,5 +84,5 @@ service ServerRoomMusic {
     rpc AddSong(AddSongRequest) returns (AddSongResponse);
     rpc SkipSong(SkipSongRequest) returns (SkipSongResponse);
     rpc StartSong(StartSongRequest) returns (StartSongResponse);
-    rpc PauseSong(PauseSongRequest) returns (PauseSongResponse);
+    rpc StopSong(StopSongRequest) returns (StopSongResponse);
 }

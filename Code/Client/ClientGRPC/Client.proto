@@ -14,12 +14,12 @@ message RegisterRoomResponse{
     bool success = 1;
 }
 
-// Load a song
-message LoadSongRequest{
+// Add a song
+message AddSongRequest{
     string name = 1;
     bytes AudioData = 2;
 }
-message LoadSongResponse{
+message AddSongResponse{
 }
 
 // Start Song
@@ -29,6 +29,7 @@ message StartSongRequest {
     double position = 3;
 }
 message StartSongResponse {
+    bool Missing = 1;
 }
 
 // Stop Song
@@ -36,11 +37,12 @@ message StopSongRequest {
     double time = 1;
 }
 message StopSongResponse {
+    bool Missing = 1;
 }
 
 service Client {
     rpc RegisterRoom(RegisterRoomRequest) returns (RegisterRoomResponse);
-    rpc LoadSong(LoadSongRequest) returns (LoadSongResponse);
+    rpc AddSong(AddSongRequest) returns (AddSongResponse);
     rpc StartSong(StartSongRequest) returns (StartSongResponse);
     rpc StopSong(StopSongRequest) returns (StopSongResponse);
 }

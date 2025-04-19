@@ -28,6 +28,9 @@ class Command(IntEnum):
 def TimeSync(PlayerQueue, Event, Counter, TimeAddress, RoomAddress, Username, ThreadConfirm, Terminate):
     print("Starting New TimeSync")
 
+    delay = []
+    offset = []
+
     PrevOffset = 0
     PrevDelay = 0
 
@@ -50,42 +53,43 @@ def TimeSync(PlayerQueue, Event, Counter, TimeAddress, RoomAddress, Username, Th
         return
     
     ThreadConfirm.set()
-    
-    while not Event.is_set() and not Terminate.is_set():
-        Start = time.clock_gettime(time.CLOCK_REALTIME)
-        response = TimeStub.TimeSync(ServerRoomTime_pb2.TimeSyncRequest())
-        End = time.clock_gettime(time.CLOCK_REALTIME)
+    try:
+        while not Event.is_set() and not Terminate.is_set():
+            Start = time.clock_gettime(time.CLOCK_REALTIME)
+            response = TimeStub.TimeSync(ServerRoomTime_pb2.TimeSyncRequest())
+            End = time.clock_gettime(time.CLOCK_REALTIME)
 
-        CurDelay = (End - Start)/2
-        CurOffset = Start + CurDelay - response.time
+            CurDelay = (End - Start)/2
+            CurOffset = Start + CurDelay - response.time
 
-        # print("TimeSync Stats:\n\tStarted:", round(Start%100,3), 
-        #       "\n\tEnded:", round(End%100,3),
-        #       "\n\tPredicted Delay:", CurDelay,
-        #       "\n\tPredicted Offset:", CurOffset,
-        #       "\n\tPrevious Offset Variance:", (np.var(offset) if len(offset > 1) else "Too Few Measurements"))
+            # print("TimeSync Stats:\n\tStarted:", round(Start%100,3), 
+            #       "\n\tEnded:", round(End%100,3),
+            #       "\n\tPredicted Delay:", CurDelay,
+            #       "\n\tPredicted Offset:", CurOffset,
+            #       "\n\tPrevious Offset Variance:", (np.var(offset) if len(offset > 1) else "Too Few Measurements"))
 
-        delay = np.append(delay, CurDelay)
-        offset = np.append(offset, CurOffset)
+            delay = np.append(delay, CurDelay)
+            offset = np.append(offset, CurOffset)
 
-        if len(offset) > OFFSET_COUNTS:
-            offset = offset[1:]
-        if len(delay) > DELAY_COUNTS:
-            delay = delay[1:]
+            if len(offset) > OFFSET_COUNTS:
+                offset = offset[1:]
+            if len(delay) > DELAY_COUNTS:
+                delay = delay[1:]
 
-        CurrDelay = np.max(delay)
-        CurrOffset = np.mean(offset)
+            CurrDelay = np.max(delay)
+            CurrOffset = np.mean(offset)
 
-        if CurrDelay > PrevDelay:
-            RoomStub.SyncStat(ServerRoomMusic_pb2.SyncStatRequest(delay=CurrDelay, username=Username))
-        if abs(CurrOffset - PrevOffset) > OFFSET_VARIANCE:
-            PlayerQueue.put((Command.SYNC, next(Counter), CurrOffset))
+            if CurrDelay > PrevDelay:
+                RoomStub.SyncStat(ServerRoomMusic_pb2.SyncStatRequest(delay=CurrDelay, username=Username))
+            if abs(CurrOffset - PrevOffset) > OFFSET_VARIANCE:
+                PlayerQueue.put((Command.SYNC, next(Counter), CurrOffset))
 
-        PrevDelay = CurrDelay
-        PrevOffset = CurrOffset
+            PrevDelay = CurrDelay
+            PrevOffset = CurrOffset
 
-        time.sleep(WAIT)
-    
+            time.sleep(WAIT)
+    except grpc._channel._InactiveRpcError:
+        pass
     print("Ending current TimeSync")
     sys.exit(0)
 
@@ -97,6 +101,8 @@ class ClientServicer(Client_pb2_grpc.ClientServicer):
         self.Terminate = Terminate
         self.Counter = itertools.count()
         self.CurrentTimeSync = threading.Event()
+        self.RecievedSongs = []
+
 
     # Register Room
     def RegisterRoom(self, request, context):
@@ -118,32 +124,39 @@ class ClientServicer(Client_pb2_grpc.ClientServicer):
 
         return Client_pb2.RegisterRoomResponse(success=True)
     
-    # Load Song
-    def LoadSong(self, request, context):
+    # Add Song
+    def AddSong(self, request, context):
         print("Recieved Load Song Request")
 
         file = os.path.join(self.MusicPath, request.name)
         with open(file, 'wb') as f:
             f.write(request.AudioData)
-        self.PlayerQueue.put((Command.LOAD, next(self.Counter), str(file)))
+        self.PlayerQueue.put((Command.LOAD, next(self.Counter), request.name, str(file)))
 
-        return Client_pb2.LoadSongResponse()
+        return Client_pb2.AddSongResponse()
 
     # Start Song
     def StartSong(self, request, context):
-        self.PlayerQueue.put((Command.START, next(self.Counter), request.time, request.offset))
+        self.PlayerQueue.put((Command.START, next(self.Counter), request.time, request.name, request.position))
         return Client_pb2.StartSongResponse()
 
     # Stop Song
     def StopSong(self, request, context):
         self.PlayerQueue.put((Command.PAUSE, next(self.Counter), request.time))
-        return Client_pb2.PauseSongResponse()
+        return Client_pb2.StopSongResponse()
 
 def ClientPlayerStart(ClientPlayer, PlayerAddress, Terminate):
     PlayerQueue = queue.Queue()
 
+    Songs = {}
+    CurrentSong = None
+    CurrentSongName = None
+    Offset = 0
+
     MusicPath = f"Client/Client_{PlayerAddress.replace(':', '_')}"
     os.makedirs(MusicPath, exist_ok=True)
+
+    VLCInstance = vlc.Instance('--quiet')
 
     Client_pb2_grpc.add_ClientServicer_to_server(ClientServicer(PlayerQueue, PlayerAddress, MusicPath, Terminate), ClientPlayer)
     
@@ -155,9 +168,47 @@ def ClientPlayerStart(ClientPlayer, PlayerAddress, Terminate):
             request = PlayerQueue.get(timeout=1)
             print(request)
         except queue.Empty:
-            pass
-    
+            continue
+
+        if request[0] == Command.LOAD:
+            media  = VLCInstance.media_new_path(os.path.abspath(request[3]))
+            player = VLCInstance.media_player_new()
+            player.set_media(media)
+            Songs[request[2]] = player
+        
+        if request[0] == Command.START:
+            try:
+                CurrentSong = Songs[request[3]]
+            except KeyError:
+                print("You don't have this song!")
+                continue
+            Start = request[2] + Offset
+            while time.clock_gettime(time.CLOCK_REALTIME) < Start: pass
+            if request[4] != 0:
+                CurrentSong.set_time(int(request[4]*1000))
+            CurrentSong.play()
+            print("True start at", round(time.clock_gettime(time.CLOCK_REALTIME)%1000,5))
+            print("Want start at", round(Start%1000,5))
+
+            if request[3] != CurrentSongName:
+                if CurrentSongName in Songs:
+                    Songs[CurrentSongName].release()
+                    del Songs[CurrentSongName]
+                CurrentSongName = request[3]
+        
+        if request[0] == Command.PAUSE and CurrentSong != None:
+            Start = request[2] + Offset
+            while time.clock_gettime(time.CLOCK_REALTIME) < Start: pass
+            CurrentSong.pause()
+            print("True start at", round(time.clock_gettime(time.CLOCK_REALTIME)%1000,5))
+            print("Want start at", round(Start%1000,5))
+
+        if request[0] == Command.SYNC:
+            Offset = request[2]
+
     ClientPlayer.stop(0)
+
+    VLCInstance.release()
 
     print("Client Stopped")
 

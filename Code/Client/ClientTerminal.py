@@ -55,7 +55,11 @@ def ClientTerminalRoom(RoomStub, ClientAddress, username):
                 AudioBytes = f.read()
             request = RoomStub.AddSong(ServerRoomMusic_pb2.AddSongRequest(name="Maple Leaf Rag", AudioData=AudioBytes))
             print(request.success)
-            print("Current Songs: ", request.MusicList)
+
+        elif lines[0] == "State":
+            request = RoomStub.CurrentState(ServerRoomMusic_pb2.CurrentStateRequest())
+            print("Users:", request.usernames)
+            print("Songs:", request.MusicList)
 
         else:
             print("Unknown Command")

@@ -1,5 +1,8 @@
 Notes:
  - Client MusicPlayer can be multithreaded, so that the start/stop options can be handled concurrently with the file saves, which might take longer. The queue ensures that the messages from the GRPC to the main loop are properly ordered.
+ - Need threads for the music player on both ends, grpc just passes commands to the player via a queue
+ - Music Queue semantics are weird, update the state every 0.5 second
+ - Ensures that actions can only take place once every 2 seconds, but the grpc returns immediately, so a lock is freed via a thread
 
 Todo:
  - Organize into subdirectories

@@ -74,10 +74,10 @@ class ServerRoomMusicStub(object):
                 request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.StartSongRequest.SerializeToString,
                 response_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.StartSongResponse.FromString,
                 _registered_method=True)
-        self.PauseSong = channel.unary_unary(
-                '/ServerRoomMusic.ServerRoomMusic/PauseSong',
-                request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.PauseSongRequest.SerializeToString,
-                response_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.PauseSongResponse.FromString,
+        self.StopSong = channel.unary_unary(
+                '/ServerRoomMusic.ServerRoomMusic/StopSong',
+                request_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.StopSongRequest.SerializeToString,
+                response_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.StopSongResponse.FromString,
                 _registered_method=True)
 
 
@@ -132,7 +132,7 @@ class ServerRoomMusicServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def PauseSong(self, request, context):
+    def StopSong(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -181,10 +181,10 @@ def add_ServerRoomMusicServicer_to_server(servicer, server):
                     request_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.StartSongRequest.FromString,
                     response_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.StartSongResponse.SerializeToString,
             ),
-            'PauseSong': grpc.unary_unary_rpc_method_handler(
-                    servicer.PauseSong,
-                    request_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.PauseSongRequest.FromString,
-                    response_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.PauseSongResponse.SerializeToString,
+            'StopSong': grpc.unary_unary_rpc_method_handler(
+                    servicer.StopSong,
+                    request_deserializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.StopSongRequest.FromString,
+                    response_serializer=Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.StopSongResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -414,7 +414,7 @@ class ServerRoomMusic(object):
             _registered_method=True)
 
     @staticmethod
-    def PauseSong(request,
+    def StopSong(request,
             target,
             options=(),
             channel_credentials=None,
@@ -427,9 +427,9 @@ class ServerRoomMusic(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ServerRoomMusic.ServerRoomMusic/PauseSong',
-            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.PauseSongRequest.SerializeToString,
-            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.PauseSongResponse.FromString,
+            '/ServerRoomMusic.ServerRoomMusic/StopSong',
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.StopSongRequest.SerializeToString,
+            Server_dot_ServerRoomGRPC_dot_ServerRoomMusic__pb2.StopSongResponse.FromString,
             options,
             channel_credentials,
             insecure,

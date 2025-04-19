@@ -34,9 +34,10 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
                                            self.rooms[key][1],
                                            int(time.time()),
                                            self.rooms[key][3])
-                        print(f"{key} is confirmed active")
+                        print(f"{key} is confirmed active with users", response.usernames)
                         continue
                     self.rooms[key][3].KillRoom(ServerRoomMusic_pb2.KillRoomRequest())
+                    print(f"Killed {key}")
                 except grpc._channel._InactiveRpcError:
                     pass
                 del self.rooms[key]
