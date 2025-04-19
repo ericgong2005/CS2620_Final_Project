@@ -5,10 +5,8 @@ Notes:
  - Ensures that actions can only take place once every 2 seconds, but the grpc returns immediately, so a lock is freed via a thread
 
 Todo:
- - Organize into subdirectories
- - Add upload music to serverlobby, and corresponding getmusiclist related commands
- - Getuserlist for serverroom
- -add song, start song, stop song, skip song
+ - Fix user bug
+ - Fix Play to end with empty queue bug
 
  client servicer: start: (song chunk, current) and stop: stops current
 
