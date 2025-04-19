@@ -1,112 +1,88 @@
-// Compile via:
-//   python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. ServerRoomMusic.proto 
+// Compile via python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. ServerRoomMusic.proto 
 
 syntax = "proto3";
 
 package ServerRoomMusic;
 
-// Status values
-enum Status {
-  PENDING = 0;
-  SUCCESS = 1;
-  MATCH = 2;
-  ERROR = 3;
+// Kill Room
+message KillRoomRequest {
+
+}
+message KillRoomResponse {
+
 }
 
-// -----------------------------------------------------------------
-// Room lifecycle
-// -----------------------------------------------------------------
-
-// Kill Room
-message KillRoomRequest {}
-message KillRoomResponse {}
-
-// Join a room (client → server)
 message JoinRoomRequest {
-  string username      = 1;
-  string ClientAddress = 2;
+    string username = 1;
+    string ClientMusicAddress = 2;
 }
 message JoinRoomResponse {
-  Status status          = 1;
-  string RoomTimeAddress = 2;  // for clock sync
+    bool success = 1;
+    string RoomTimeAddress = 2;
 }
 
-// Leave a room (client → server)
+// Inform you left a room
 message LeaveRoomRequest {
-  string username = 1;
+    string username = 1;
 }
 message LeaveRoomResponse {
-  Status status = 1;
+    bool success = 1;
 }
 
-// -----------------------------------------------------------------
-// Clock‑sync
-// -----------------------------------------------------------------
+// Update Sync Stats
 message SyncStatRequest {
-  string username = 1;
-  double delay    = 2;
+    string username = 1;
+    double delay = 2;
 }
 message SyncStatResponse {
-  Status status = 1;
 }
 
-// -----------------------------------------------------------------
-// Room state
-// -----------------------------------------------------------------
-message CurrentStateRequest {}
+// Current State
+message CurrentStateRequest {
+}
 message CurrentStateResponse {
-  repeated string usernames = 1;
-  repeated string queue     = 2;
+    repeated string usernames = 1;
+    repeated string MusicList = 2;
 }
 
-// -----------------------------------------------------------------
-// Song control
-// -----------------------------------------------------------------
-
-// 1) AddSong: client → server, uploading a new mp3
+// Add Song
 message AddSongRequest {
-  string filename   = 1;  // original file name or title
-  bytes  audio_data = 2;  // raw MP3 bytes
+    string name = 1;
+    bytes AudioData = 2;
 }
 message AddSongResponse {
-  Status status         = 1;
-  int32  queue_position = 2;  // where in the queue it landed
+    bool success = 1;
 }
 
-// 2) DeleteSong: client → server to remove the current song
-message DeleteSongRequest {}
-message DeleteSongResponse {
-  Status status = 1;
+// Skip Song
+message SkipSongRequest {
+}
+message SkipSongResponse {
+    bool success = 1;
 }
 
-// 3) StartSong: client → server to begin playing the current song
-message StartSongRequest {}
+// Start Song
+message StartSongRequest {
+}
 message StartSongResponse {
-  Status status = 1;
+    bool success = 1;
 }
 
-// 4) PauseSong: client → server to pause playback
-message PauseSongRequest {}
-message PauseSongResponse {
-  Status status = 1;
+// Stop Song
+message StopSongRequest {
+}
+message StopSongResponse {
+    bool success = 1;
 }
 
-// -----------------------------------------------------------------
-// Service definition
-// -----------------------------------------------------------------
 service ServerRoomMusic {
-  // Room lifecycle
-  rpc KillRoom   (KillRoomRequest)   returns (KillRoomResponse);
-  rpc JoinRoom   (JoinRoomRequest)   returns (JoinRoomResponse);
-  rpc LeaveRoom  (LeaveRoomRequest)  returns (LeaveRoomResponse);
-
-  // Clock‑sync & state
-  rpc SyncStat     (SyncStatRequest)     returns (SyncStatResponse);
-  rpc CurrentState (CurrentStateRequest) returns (CurrentStateResponse);
-
-  // Song control
-  rpc AddSong     (AddSongRequest)     returns (AddSongResponse);
-  rpc DeleteSong  (DeleteSongRequest)  returns (DeleteSongResponse);
-  rpc StartSong   (StartSongRequest)   returns (StartSongResponse);
-  rpc PauseSong   (PauseSongRequest)   returns (PauseSongResponse);
+    rpc KillRoom(KillRoomRequest) returns (KillRoomResponse);
+    rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
+    rpc LeaveRoom(LeaveRoomRequest) returns (LeaveRoomResponse);
+    rpc SyncStat(SyncStatRequest) returns (SyncStatResponse);
+    rpc CurrentState(CurrentStateRequest) returns (CurrentStateResponse);
+    rpc AddSong(AddSongRequest) returns (AddSongResponse);
+    rpc SkipSong(SkipSongRequest) returns (SkipSongResponse);
+    rpc StartSong(StartSongRequest) returns (StartSongResponse);
+    rpc StopSong(StopSongRequest) returns (StopSongResponse);
 }

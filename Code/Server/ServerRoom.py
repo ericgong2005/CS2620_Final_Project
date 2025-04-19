@@ -1,213 +1,302 @@
-#!/usr/bin/env python3
-# ServerRoom.py
-
 from concurrent import futures
 import grpc
 import time
 import socket
+import queue
+import threading
+from enum import IntEnum 
+from io import BytesIO
+from mutagen.mp3 import MP3
 
 from Client.ClientGRPC import Client_pb2, Client_pb2_grpc
 from Server.ServerLobbyGRPC import ServerLobby_pb2, ServerLobby_pb2_grpc
-from Server.ServerRoomGRPC import (
-    ServerRoomMusic_pb2, ServerRoomMusic_pb2_grpc,
-    ServerRoomTime_pb2, ServerRoomTime_pb2_grpc
-)
-from Server.ServerConstants import (
-    MAX_TOLERANT_DELAY, WAIT_MULTIPLIER,
-    MAX_DISTRIBUTION_TIME, CONSTANT_PROCCESS_TIME
-)
+from Server.ServerRoomGRPC import (ServerRoomMusic_pb2, ServerRoomMusic_pb2_grpc, 
+                            ServerRoomTime_pb2, ServerRoomTime_pb2_grpc)
+
+from Server.ServerConstants import (MAX_TOLERANT_DELAY, WAIT_MULTIPLIER, 
+                                    MAX_DISTRIBUTION_TIME, CONSTANT_PROCCESS_TIME, 
+                                    MAX_GRPC_TRANSMISSION, MAX_SONG_QUEUE, 
+                                    REACTION_TIME, SONG_QUEUE_UPDATE, ROOM_WORKERS)
+
+class Command(IntEnum):
+    START = 0
+    STOP = 1
+    SKIP = 2
+    ADD = 3
+
+
+def MusicPlayer(Servicer):
+    position = 0
+    PrevTime = 0
+    CurrTime = 0
+    action = None
+
+    while not Servicer.Terminate.is_set():
+        try:
+            action = Servicer.ActionQueue.get_nowait()
+            print("Recieved action", action)
+        except queue.Empty:
+            if Servicer.playing and position + time.clock_gettime(time.CLOCK_REALTIME) - PrevTime > Servicer.CurrentSong[2]: # Song over
+                Servicer.CurrentSong = Servicer.SongQueue.get()
+                position = 0
+                action = Command.START
+            else:
+                continue
+
+        Delay = (max(Servicer.delays.values()) if len(Servicer.delays) > 0 else 0)
+        Delay = Delay*WAIT_MULTIPLIER + CONSTANT_PROCCESS_TIME
+
+        if action == Command.SKIP:
+            Servicer.CurrentSong = Servicer.SongQueue.get()
+            position = 0
+            action = Command.START
+
+        if action == Command.START:   
+            if Servicer.CurrentSong == None:
+                Servicer.CurrentSong = Servicer.SongQueue.get()           
+            CurrTime = time.clock_gettime(time.CLOCK_REALTIME) + Delay
+            for user in Servicer.users.keys():
+                try:
+                    Servicer.users[user].StartSong(Client_pb2.StartSongRequest(name=Servicer.CurrentSong[0], 
+                                                                               time=CurrTime, 
+                                                                               position = position))
+                except grpc._channel._InactiveRpcError:
+                    Servicer.inactive.put(user)
+                    print("Missed", user)
+
+            PrevTime = CurrTime
+            Servicer.playing = True
+            print(f"Sent Song Start request to all clients at {round(CurrTime%100000, 5)}")
+            print("All", list(Servicer.users.keys()))
+            print("Started", Servicer.CurrentSong[0], "lasting", Servicer.CurrentSong[2])
+
+        elif action == Command.STOP:
+            if Servicer.CurrentSong[2] - position < REACTION_TIME:
+                continue
+
+            CurrTime = time.clock_gettime(time.CLOCK_REALTIME) + Delay
+            for user in Servicer.users.keys():
+                try:
+                    Servicer.users[user].StopSong(Client_pb2.StopSongRequest(time=CurrTime))
+                except grpc._channel._InactiveRpcError:
+                    Servicer.inactive.put(user)
+                    print("Missed", user)
+
+            position += (CurrTime - PrevTime)//1 # Round down to nearest second
+            PrevTime = CurrTime
+            Servicer.playing = False
+            print(f"Sent Song Stop request to all clients at {round(CurrTime%100000, 5)}")
+            print("All", list(Servicer.users.keys()))
 
 class ServerRoomTimeServicer(ServerRoomTime_pb2_grpc.ServerRoomTimeServicer):
     def TimeSync(self, request, context):
-        return ServerRoomTime_pb2.TimeSyncResponse(
-            time=time.clock_gettime(time.CLOCK_REALTIME)
-        )
+        return ServerRoomTime_pb2.TimeSyncResponse(time=time.clock_gettime(time.CLOCK_REALTIME))
 
 class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
-    def __init__(self, time_address, name, server):
-        self.Servicer = server
-        self.name = name
-        self.time_address = time_address
-        self.users = {}    # username -> ClientStub
-        self.delays = {}   # username -> last delay
-        self.queue = []    # list of (filename, audio_bytes)
+    def __init__(self, TimeAddress, RoomAddress, Name, Terminate):
+        self.name = Name # Read only
+        self.RoomAddress = RoomAddress # Read only
+        self.TimeAddress = TimeAddress # Read only
+        self.Terminate = Terminate # Atomic Servicer Write, Thread Read
 
-    def Shutdown(self):
-        time.sleep(1)
-        print("Shutting Down", self.name)
-        self.Servicer.stop(0)
+        self.users = {}  # Holds user to User music GRPC mappings, Servicer Write, Thread Read
+        self.delays = {} # Holds user to delay mappings, Servicer Write, Thread Read
+        self.SongQueue = queue.Queue(maxsize=MAX_SONG_QUEUE) # list of (Name, bytes, duration) mappings, Atomic or mutexed
+
+        self.ActionQueue = queue.Queue() # Servicer Write, Thread Read
+        self.ActionLock = threading.Lock() # Servicer Write
+
+        self.QueueUpdateTime = time.time() # Servicer Write
+        self.SongQueueList = [] # Servicer Write
+        self.CurrentSong = None # Thread Write
+        self.playing = False # Thread Write
+
+        self.inactive = queue.Queue() # Atomic
+
+        MusicPlayerThread = threading.Thread(target=MusicPlayer, args=(self,))
+        MusicPlayerThread.start()
+
+    def ReleaseLock(self):
+        release = threading.Timer(REACTION_TIME, self.ActionLock.release)
+        release.start()
 
     # Kill Room
     def KillRoom(self, request, context):
-        self.Shutdown()
+        print("Shutting Down", self.name)
+        self.Terminate.set()
         return ServerRoomMusic_pb2.KillRoomResponse()
-
-    # Join Room
+    
+    # Remove Inactive Users
+    def RemoveInactive(self):
+        while not self.inactive.empty():
+            current = self.inactive.get()
+            if current in self.users:
+                del self.users[current]
+            if current in self.delays:
+                del self.delays[current]
+        if len(self.users) == 0:
+            print("No Users Left")
+            self.Terminate.set()
+    
+    # Try to join a room
     def JoinRoom(self, request, context):
-        print("Join Room Request:", request.username, request.ClientAddress)
+        print("Join Room Request: ", request.username, request.ClientMusicAddress)
+        # Establish stub to user
+        UserStub = None
         try:
-            chan = grpc.insecure_channel(request.ClientAddress)
-            stub = Client_pb2_grpc.ClientStub(chan)
-            grpc.channel_ready_future(chan).result(timeout=1)
+            channel = grpc.insecure_channel(request.ClientMusicAddress)
+            UserStub = Client_pb2_grpc.ClientStub(channel)
+            grpc.channel_ready_future(channel).result(timeout=1)
+            print(f"Room connected to User {request.username} at {request.ClientMusicAddress}")
         except Exception as e:
-            print("Failed to connect to user stub:", e)
-            return ServerRoomMusic_pb2.JoinRoomResponse(
-                status=ServerRoomMusic_pb2.Status.ERROR,
-                RoomTimeAddress=self.time_address
-            )
-        self.users[request.username] = stub
+            print(f"Failed to connect to {request.username}: {e}")
+            return ServerRoomMusic_pb2.JoinRoomResponse(success=False, RoomTimeAddress=self.TimeAddress)
+        
+        response = UserStub.RegisterRoom(Client_pb2.RegisterRoomRequest(RoomAddress=self.RoomAddress,
+                                                             TimeAddress=self.TimeAddress,
+                                                             username=request.username))
+       
+        if not response.success:
+            print("Failed to start TimeSync for", request.username)
+            return ServerRoomMusic_pb2.JoinRoomResponse(success=False, RoomTimeAddress=self.TimeAddress)
+        
+        self.users[request.username] = UserStub
+        
         print(request.username, "has successfully joined", self.name)
-        return ServerRoomMusic_pb2.JoinRoomResponse(
-            status=ServerRoomMusic_pb2.Status.SUCCESS,
-            RoomTimeAddress=self.time_address
-        )
+        return ServerRoomMusic_pb2.JoinRoomResponse(success=True, RoomTimeAddress=self.TimeAddress)
 
-    # Leave Room
+    # Inform you left a room
     def LeaveRoom(self, request, context):
         if request.username in self.users:
+            self.users[request.username].Leave(Client_pb2.LeaveRequest())
             del self.users[request.username]
-            self.delays.pop(request.username, None)
-        print(request.username, "has left", self.name)
-        return ServerRoomMusic_pb2.LeaveRoomResponse(
-            status=ServerRoomMusic_pb2.Status.SUCCESS
-        )
+        if request.username in self.delays:
+            del self.delays[request.username]
 
-    # Sync statistics
+        print(request.username, "has left", self.name)
+
+        self.RemoveInactive()
+
+        return ServerRoomMusic_pb2.LeaveRoomResponse(success=True)
+    
+    # Update TimeSync stats
     def SyncStat(self, request, context):
-        current_max = max(self.delays.values()) if self.delays else 0
-        if (request.delay > MAX_TOLERANT_DELAY or
-            current_max * WAIT_MULTIPLIER > MAX_DISTRIBUTION_TIME):
-            return ServerRoomMusic_pb2.SyncStatResponse(
-                status=ServerRoomMusic_pb2.Status.ERROR
-            )
         self.delays[request.username] = request.delay
-        return ServerRoomMusic_pb2.SyncStatResponse(
-            status=ServerRoomMusic_pb2.Status.SUCCESS
-        )
+        return ServerRoomMusic_pb2.SyncStatResponse()
 
     # Current State
     def CurrentState(self, request, context):
-       return ServerRoomMusic_pb2.CurrentStateResponse(
-           usernames=list(self.users.keys()),
-           queue=[fname for (fname, _) in self.queue]
-       )
+        if time.time() - self.QueueUpdateTime > SONG_QUEUE_UPDATE:
+            with self.SongQueue.mutex:
+                self.SongQueueList = list(self.SongQueue.queue)
+                self.QueueUpdateTime = time.time()
+            remove = threading.Timer(1, self.RemoveInactive)
+            remove.start()
+        return ServerRoomMusic_pb2.CurrentStateResponse(usernames=list(self.users.keys()), 
+                                                        MusicList=[item[0] for item in self.SongQueueList])
 
-    # Add Song
+    # Add Song RPC method
     def AddSong(self, request, context):
-        print(f"[{self.name}] AddSong: {request.filename} ({len(request.audio_data)} bytes)")
-        self.queue.append((request.filename, request.audio_data))
-        position = len(self.queue) - 1
-        return ServerRoomMusic_pb2.AddSongResponse(
-            status=ServerRoomMusic_pb2.Status.SUCCESS,
-            queue_position=position
-        )
+        if not self.ActionLock.acquire(blocking=False):
+            return ServerRoomMusic_pb2.AddSongResponse(success=False)
+        
+        print("Adding", request.name, "to", self.name)
 
-    # Delete Song (skip current)
-    def DeleteSong(self, request, context):
-        if not self.queue:
-            print(f"[{self.name}] DeleteSong: queue empty")
-            return ServerRoomMusic_pb2.DeleteSongResponse(
-                status=ServerRoomMusic_pb2.Status.ERROR
-            )
-        fname, _ = self.queue.pop(0)
-        print(f"[{self.name}] Deleted song '{fname}' from queue")
-        return ServerRoomMusic_pb2.DeleteSongResponse(
-            status=ServerRoomMusic_pb2.Status.SUCCESS
-        )
+        name = request.name + str(int(time.time()))
 
-    # Start Song: broadcast LoadSong + StartSong to each client
+        audio = MP3(BytesIO(request.AudioData))
+        try:
+            self.SongQueue.put_nowait((name, request.AudioData, audio.info.length))
+        except queue.Full:
+            self.ActionLock.release()
+            return ServerRoomMusic_pb2.AddSongResponse(success=False)
+        
+        print("Inform Users of Song")
+
+        for user in self.users.keys():
+            try:
+                self.users[user].AddSong(Client_pb2.AddSongRequest(name=name, AudioData=request.AudioData))
+            except grpc._channel._InactiveRpcError:
+                self.inactive.put(user)
+                print("Missed", user)
+        print("Sent", name, "to", list(self.users.keys()))
+
+        self.ReleaseLock()
+        return ServerRoomMusic_pb2.AddSongResponse(success=True)
+
+    # Skip Song
+    def SkipSong(self, request, context):
+        if not self.ActionLock.acquire(blocking=False):
+            return ServerRoomMusic_pb2.SkipSongResponse(success=False)
+        
+        if self.CurrentSong == None or self.SongQueue.empty():
+            self.ReleaseLock()
+            return ServerRoomMusic_pb2.StartSongResponse(success=False)
+        
+        self.ActionQueue.put(Command.SKIP)
+
+        self.ReleaseLock()
+        return ServerRoomMusic_pb2.SkipSongResponse(success=True)
+
+    # Start Song
     def StartSong(self, request, context):
-        print(f"[{self.name}] StartSong Command received")
-        # compute synchronized start time
-        max_delay = max(self.delays.values()) if self.delays else 0
-        wait = max_delay * WAIT_MULTIPLIER + CONSTANT_PROCCESS_TIME
-        start_time = time.clock_gettime(time.CLOCK_REALTIME) + wait
+        if self.playing or not self.ActionLock.acquire(blocking=False):
+            print("Playing:", self.playing)
+            return ServerRoomMusic_pb2.StartSongResponse(success=False)
+        print("Recieved Start Song Command")
+        print("Current Song:", (self.CurrentSong[0] if self.CurrentSong != None else "None"))
+        if self.CurrentSong == None and self.SongQueue.empty():
+            self.ReleaseLock()
+            return ServerRoomMusic_pb2.StartSongResponse(success=False)
+        
+        self.ActionQueue.put(Command.START)
 
-        # take the head of queue
-        if not self.queue:
-            print(f"[{self.name}] No song to play")
-            return ServerRoomMusic_pb2.StartSongResponse(
-                status=ServerRoomMusic_pb2.Status.ERROR
-            )
-        fname, audio_bytes = self.queue[0]
+        self.ReleaseLock()
+        return ServerRoomMusic_pb2.StartSongResponse(success=True)
 
-        inactive = []
-        for user, stub in self.users.items():
-            try:
-                # 1) send the audio to client
-                stub.LoadSong(
-                    Client_pb2.LoadSongRequest(
-                        song_name=fname,
-                        audio_data=audio_bytes
-                    )
-                )
-                # 2) tell client when to start
-                stub.StartSong(
-                    Client_pb2.StartSongRequest(
-                        start=start_time,
-                        offset=0.0
-                    )
-                )
-            except Exception as e:
-                print(f"[{self.name}] Failed StartSong to {user}:", e)
-                inactive.append(user)
+    # Stop Song
+    def StopSong(self, request, context):
+        if not self.playing or not self.ActionLock.acquire(blocking=False):
+            print("Playing:", self.playing)
+            return ServerRoomMusic_pb2.StopSongResponse(success=False)
+        self.ActionQueue.put(Command.STOP)
 
-        print(f"[{self.name}] Broadcast StartSong at {start_time}, missed:", inactive)
-        return ServerRoomMusic_pb2.StartSongResponse(
-            status=ServerRoomMusic_pb2.Status.SUCCESS
-        )
+        self.ReleaseLock()
+        return ServerRoomMusic_pb2.StopSongResponse(success=True)
 
-    # Pause Song → StopSong on client
-    def PauseSong(self, request, context):
-        # here request.pause_time is unused, we'll just issue Stop at now
-        stop_time = time.clock_gettime(time.CLOCK_REALTIME)
-        print(f"[{self.name}] PauseSong → StopSong at {stop_time}")
-        for user, stub in self.users.items():
-            try:
-                stub.StopSong(
-                    Client_pb2.StopSongRequest(stop=stop_time)
-                )
-            except Exception as e:
-                print(f"[{self.name}] Failed StopSong to {user}:", e)
-        return ServerRoomMusic_pb2.PauseSongResponse(
-            status=ServerRoomMusic_pb2.Status.SUCCESS
-        )
+def startServerRoom(LobbyQueue, Name):
+    # Get hostname
+    hostname = socket.gethostbyname(socket.gethostname())
 
+    # Set up thread terminator
+    Terminate = threading.Event()
 
-def startServerRoom(lobby_queue, name):
-    host = socket.gethostbyname(socket.gethostname())
+    # Start ServerRoomTime gRPC server.
+    ServerRoomTime = grpc.server(futures.ThreadPoolExecutor(max_workers=ROOM_WORKERS))
+    ServerRoomTime_pb2_grpc.add_ServerRoomTimeServicer_to_server(ServerRoomTimeServicer(), ServerRoomTime)
+    TimeAddress = hostname + ":" + str(ServerRoomTime.add_insecure_port(f"{hostname}:0"))
+    ServerRoomTime.start()
+    print(f"ServerRoomTime started on {TimeAddress}")
 
-    # Time‐sync server
-    time_srv = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
-    ServerRoomTime_pb2_grpc.add_ServerRoomTimeServicer_to_server(
-        ServerRoomTimeServicer(), time_srv
-    )
-    time_addr = f"{host}:{time_srv.add_insecure_port(f'{host}:0')}"
-    time_srv.start()
-    print("ServerRoomTime started on", time_addr)
+    # Start ServerRoomMusic gRPC server.
+    ServerRoomMusic = grpc.server(futures.ThreadPoolExecutor(max_workers=1),
+                                  options = [('grpc.max_send_message_length', MAX_GRPC_TRANSMISSION),
+                                    ('grpc.max_receive_message_length', MAX_GRPC_TRANSMISSION)])
+    RoomAddress = hostname + ":" + str(ServerRoomMusic.add_insecure_port(f"{hostname}:0"))
+    ServerRoomMusic_pb2_grpc.add_ServerRoomMusicServicer_to_server(ServerRoomMusicServicer(TimeAddress, RoomAddress, Name, Terminate), ServerRoomMusic)
+    ServerRoomMusic.start()
+    print(f"ServerRoomMusic started on {RoomAddress}")
 
-    # Music server
-    music_srv = grpc.server(
-        futures.ThreadPoolExecutor(max_workers=1),
-        options=[
-        ('grpc.max_send_message_length', 200 * 1024 * 1024),
-        ('grpc.max_receive_message_length', 200 * 1024 * 1024),
-        ]
-    )
-    ServerRoomMusic_pb2_grpc.add_ServerRoomMusicServicer_to_server(
-        ServerRoomMusicServicer(time_addr, name, music_srv),
-        music_srv
-    )
-    music_addr = f"{host}:{music_srv.add_insecure_port(f'{host}:0')}"
-    music_srv.start()
-    print("ServerRoomMusic started on", music_addr)
+    if LobbyQueue != None:
+        LobbyQueue.put(RoomAddress)
+    
+    while not Terminate.is_set():
+        time.sleep(1)
 
-    if lobby_queue:
-        lobby_queue.put(music_addr)
+    time.sleep(1)
+    ServerRoomMusic.stop(0)
+    ServerRoomTime.stop(0)
+    print("Fully Shutdown", Name)
 
-    music_srv.wait_for_termination()
-    time_srv.stop(0)
-    print("Fully Shutdown", name)
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     startServerRoom(None, None)

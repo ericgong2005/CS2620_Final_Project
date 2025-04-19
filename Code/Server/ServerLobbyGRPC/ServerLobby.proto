@@ -16,6 +16,7 @@ enum Status {
 // Join the lobby 
 message JoinLobbyRequest {
     string username = 1;
+    string MusicPlayerAddress = 2;
 }
 message JoinLobbyResponse {
     Status status = 1;

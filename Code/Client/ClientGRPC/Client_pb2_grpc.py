@@ -34,15 +34,15 @@ class ClientStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.CurrentState = channel.unary_unary(
-                '/Client.Client/CurrentState',
-                request_serializer=Client_dot_ClientGRPC_dot_Client__pb2.CurrentStateRequest.SerializeToString,
-                response_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.CurrentStateResponse.FromString,
+        self.RegisterRoom = channel.unary_unary(
+                '/Client.Client/RegisterRoom',
+                request_serializer=Client_dot_ClientGRPC_dot_Client__pb2.RegisterRoomRequest.SerializeToString,
+                response_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.RegisterRoomResponse.FromString,
                 _registered_method=True)
-        self.LoadSong = channel.unary_unary(
-                '/Client.Client/LoadSong',
-                request_serializer=Client_dot_ClientGRPC_dot_Client__pb2.LoadSongRequest.SerializeToString,
-                response_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.LoadSongResponse.FromString,
+        self.AddSong = channel.unary_unary(
+                '/Client.Client/AddSong',
+                request_serializer=Client_dot_ClientGRPC_dot_Client__pb2.AddSongRequest.SerializeToString,
+                response_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.AddSongResponse.FromString,
                 _registered_method=True)
         self.StartSong = channel.unary_unary(
                 '/Client.Client/StartSong',
@@ -54,18 +54,28 @@ class ClientStub(object):
                 request_serializer=Client_dot_ClientGRPC_dot_Client__pb2.StopSongRequest.SerializeToString,
                 response_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.StopSongResponse.FromString,
                 _registered_method=True)
+        self.Leave = channel.unary_unary(
+                '/Client.Client/Leave',
+                request_serializer=Client_dot_ClientGRPC_dot_Client__pb2.LeaveRequest.SerializeToString,
+                response_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.LeaveResponse.FromString,
+                _registered_method=True)
+        self.Heartbeat = channel.unary_unary(
+                '/Client.Client/Heartbeat',
+                request_serializer=Client_dot_ClientGRPC_dot_Client__pb2.HeartbeatRequest.SerializeToString,
+                response_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.HeartbeatResponse.FromString,
+                _registered_method=True)
 
 
 class ClientServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def CurrentState(self, request, context):
+    def RegisterRoom(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def LoadSong(self, request, context):
+    def AddSong(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -83,18 +93,30 @@ class ClientServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Leave(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Heartbeat(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ClientServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'CurrentState': grpc.unary_unary_rpc_method_handler(
-                    servicer.CurrentState,
-                    request_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.CurrentStateRequest.FromString,
-                    response_serializer=Client_dot_ClientGRPC_dot_Client__pb2.CurrentStateResponse.SerializeToString,
+            'RegisterRoom': grpc.unary_unary_rpc_method_handler(
+                    servicer.RegisterRoom,
+                    request_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.RegisterRoomRequest.FromString,
+                    response_serializer=Client_dot_ClientGRPC_dot_Client__pb2.RegisterRoomResponse.SerializeToString,
             ),
-            'LoadSong': grpc.unary_unary_rpc_method_handler(
-                    servicer.LoadSong,
-                    request_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.LoadSongRequest.FromString,
-                    response_serializer=Client_dot_ClientGRPC_dot_Client__pb2.LoadSongResponse.SerializeToString,
+            'AddSong': grpc.unary_unary_rpc_method_handler(
+                    servicer.AddSong,
+                    request_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.AddSongRequest.FromString,
+                    response_serializer=Client_dot_ClientGRPC_dot_Client__pb2.AddSongResponse.SerializeToString,
             ),
             'StartSong': grpc.unary_unary_rpc_method_handler(
                     servicer.StartSong,
@@ -105,6 +127,16 @@ def add_ClientServicer_to_server(servicer, server):
                     servicer.StopSong,
                     request_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.StopSongRequest.FromString,
                     response_serializer=Client_dot_ClientGRPC_dot_Client__pb2.StopSongResponse.SerializeToString,
+            ),
+            'Leave': grpc.unary_unary_rpc_method_handler(
+                    servicer.Leave,
+                    request_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.LeaveRequest.FromString,
+                    response_serializer=Client_dot_ClientGRPC_dot_Client__pb2.LeaveResponse.SerializeToString,
+            ),
+            'Heartbeat': grpc.unary_unary_rpc_method_handler(
+                    servicer.Heartbeat,
+                    request_deserializer=Client_dot_ClientGRPC_dot_Client__pb2.HeartbeatRequest.FromString,
+                    response_serializer=Client_dot_ClientGRPC_dot_Client__pb2.HeartbeatResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -118,7 +150,7 @@ class Client(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def CurrentState(request,
+    def RegisterRoom(request,
             target,
             options=(),
             channel_credentials=None,
@@ -131,9 +163,9 @@ class Client(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/Client.Client/CurrentState',
-            Client_dot_ClientGRPC_dot_Client__pb2.CurrentStateRequest.SerializeToString,
-            Client_dot_ClientGRPC_dot_Client__pb2.CurrentStateResponse.FromString,
+            '/Client.Client/RegisterRoom',
+            Client_dot_ClientGRPC_dot_Client__pb2.RegisterRoomRequest.SerializeToString,
+            Client_dot_ClientGRPC_dot_Client__pb2.RegisterRoomResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -145,7 +177,7 @@ class Client(object):
             _registered_method=True)
 
     @staticmethod
-    def LoadSong(request,
+    def AddSong(request,
             target,
             options=(),
             channel_credentials=None,
@@ -158,9 +190,9 @@ class Client(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/Client.Client/LoadSong',
-            Client_dot_ClientGRPC_dot_Client__pb2.LoadSongRequest.SerializeToString,
-            Client_dot_ClientGRPC_dot_Client__pb2.LoadSongResponse.FromString,
+            '/Client.Client/AddSong',
+            Client_dot_ClientGRPC_dot_Client__pb2.AddSongRequest.SerializeToString,
+            Client_dot_ClientGRPC_dot_Client__pb2.AddSongResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -215,6 +247,60 @@ class Client(object):
             '/Client.Client/StopSong',
             Client_dot_ClientGRPC_dot_Client__pb2.StopSongRequest.SerializeToString,
             Client_dot_ClientGRPC_dot_Client__pb2.StopSongResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def Leave(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/Client.Client/Leave',
+            Client_dot_ClientGRPC_dot_Client__pb2.LeaveRequest.SerializeToString,
+            Client_dot_ClientGRPC_dot_Client__pb2.LeaveResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def Heartbeat(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/Client.Client/Heartbeat',
+            Client_dot_ClientGRPC_dot_Client__pb2.HeartbeatRequest.SerializeToString,
+            Client_dot_ClientGRPC_dot_Client__pb2.HeartbeatResponse.FromString,
             options,
             channel_credentials,
             insecure,

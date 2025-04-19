@@ -1,4 +1,4 @@
-TARGETS = grpc clean Server Client ClientTerminal ServerRoom
+TARGETS = grpc clean Server Client ClientTerminal ServerRoom ClientPlayer
 
 .PHONY: $(TARGETS)
 
@@ -33,6 +33,10 @@ ClientTerminal:
 ServerRoom:
 	@echo "Note this should only be used for testing..."
 	python -m Server.ServerRoom $(ARGS)
+
+ClientPlayer:
+	@echo "Note this should only be used for testing..."
+	python -m Client.ClientPlayer
 
 %:
 	@echo "Unrecognised Command"

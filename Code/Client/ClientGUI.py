@@ -1,16 +1,14 @@
-#!/usr/bin/env python3
-# ClientGUI.py
-
 import sys
 import os
 import socket
 import threading
 import time
-import signal
 import numpy as np
 
 from concurrent import futures
 import grpc
+
+from Client.ClientPlayer import ClientPlayerStart
 
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QLineEdit, QPushButton,
@@ -25,79 +23,7 @@ from Server.ServerRoomGRPC import (
     ServerRoomMusic_pb2, ServerRoomMusic_pb2_grpc,
     ServerRoomTime_pb2, ServerRoomTime_pb2_grpc
 )
-from Server.ServerConstants import WAIT, MAX_OFFSET_VARIANCE, MAX_REPEATS, COUNTS
-
-# -------------------------------------------------------------------
-# Globals for our client‐side gRPC servicer
-# -------------------------------------------------------------------
-client_servicer_port = None
-client_address = None
-_client_ready_evt = threading.Event()
-
-# maximum message size (200 MB)
-_MAX_MSG = 200 * 1024 * 1024
-_GRPC_OPTIONS = [
-    ('grpc.max_send_message_length', _MAX_MSG),
-    ('grpc.max_receive_message_length', _MAX_MSG),
-]
-
-# -------------------------------------------------------------------
-# TimeSync helper
-# -------------------------------------------------------------------
-def TimeSync(time_stub, offset_arr, delay_arr, repeats=-1):
-    while True:
-        start = time.clock_gettime(time.CLOCK_REALTIME)
-        resp = time_stub.TimeSync(ServerRoomTime_pb2.TimeSyncRequest())
-        end = time.clock_gettime(time.CLOCK_REALTIME)
-
-        cur_delay = (end - start) / 2.0
-        cur_offset = start + cur_delay - resp.time
-
-        delay_arr = np.append(delay_arr, cur_delay)
-        offset_arr = np.append(offset_arr, cur_offset)
-        if len(delay_arr) > COUNTS:
-            delay_arr = delay_arr[1:]
-            offset_arr = offset_arr[1:]
-
-        if (len(delay_arr) == COUNTS and
-            (repeats == 0 or np.var(offset_arr) < MAX_OFFSET_VARIANCE or repeats + MAX_REPEATS < 0)):
-            return offset_arr, delay_arr
-
-        time.sleep(WAIT)
-        repeats -= 1
-
-# -------------------------------------------------------------------
-# Client‐side gRPC server (for LoadSong, StartSong, StopSong)
-# -------------------------------------------------------------------
-class ClientServicer(Client_pb2_grpc.ClientServicer):
-    def CurrentState(self, request, context):
-        return Client_pb2.CurrentStateResponse(response="OK")
-
-    def LoadSong(self, request, context):
-        print(f"[Client] LoadSong: {request.song_name} ({len(request.audio_data)} bytes)")
-        return Client_pb2.LoadSongResponse(success=True)
-
-    def StartSong(self, request, context):
-        print(f"[Client] StartSong at {request.start}, offset {request.offset}")
-        return Client_pb2.StartSongResponse(success=True)
-
-    def StopSong(self, request, context):
-        print(f"[Client] StopSong at {request.stop}")
-        return Client_pb2.StopSongResponse(success=True)
-
-def serve_grpc():
-    global client_servicer_port, client_address
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
-    Client_pb2_grpc.add_ClientServicer_to_server(ClientServicer(), server)
-    client_servicer_port = server.add_insecure_port("0.0.0.0:0")
-    server.start()
-
-    host = socket.gethostbyname(socket.gethostname())
-    client_address = f"{host}:{client_servicer_port}"
-    print(f"[Client gRPC] listening on {client_address}")
-
-    _client_ready_evt.set()
-    server.wait_for_termination()
+from Server.ServerConstants import MAX_GRPC_TRANSMISSION
 
 # -------------------------------------------------------------------
 # Qt GUI Windows
@@ -131,7 +57,7 @@ class LoginWindow(QMainWindow):
             return
         try:
             resp = self.lobby_stub.JoinLobby(
-                ServerLobby_pb2.JoinLobbyRequest(username=username)
+                ServerLobby_pb2.JoinLobbyRequest(username=username, MusicPlayerAddress=self.client_address)
             )
         except grpc.RpcError as e:
             QMessageBox.critical(self, "RPC Error", f"Could not reach lobby:\n{e}")
@@ -140,8 +66,8 @@ class LoginWindow(QMainWindow):
             QMessageBox.information(self, "Username Taken",
                                     f"Username '{username}' taken.")
         else:
-            QMessageBox.information(self, "Username Available",
-                                    f"Username '{username}' available.")
+            # QMessageBox.information(self, "Username Available",
+            #                         f"Username '{username}' available.")
             self.hide()
             self.lobby_win = LobbyWindow(
                 self.lobby_stub, username,
@@ -208,15 +134,6 @@ class LobbyWindow(QMainWindow):
             )
             self.room_win.show()
 
-    def closeEvent(self, event):
-        try:
-            self.lobby_stub.LeaveLobby(
-                ServerLobby_pb2.LeaveLobbyRequest(username=self.username)
-            )
-        except:
-            pass
-        event.accept()
-
 class JoinRoomDialog(QDialog):
     def __init__(self, lobby_stub, parent, username):
         super().__init__(parent)
@@ -241,7 +158,7 @@ class JoinRoomDialog(QDialog):
         addrs = list(resp.addresses)
         self.list = QListWidget()
         for r in rooms:
-            self.list.addItem(r)
+            self.list.addItem(r[6:])
         layout.addWidget(self.list)
         self.input = QLineEdit()
         layout.addWidget(self.input)
@@ -253,7 +170,7 @@ class JoinRoomDialog(QDialog):
         self.setLayout(layout)
 
     def on_join(self):
-        roomname = self.input.text().strip()
+        roomname = "Room: " + self.input.text().strip()
         if not roomname:
             QMessageBox.warning(self, "Input Error", "Room name cannot be empty.")
             return
@@ -323,110 +240,90 @@ class RoomWindow(QMainWindow):
         self.refresh_room()
 
     def init_room_connection(self):
-        _ = _client_ready_evt.wait()
-        chan = grpc.insecure_channel(self.room_address, options=_GRPC_OPTIONS)
-        grpc.channel_ready_future(chan).result(timeout=5)
-        self.room_stub = ServerRoomMusic_pb2_grpc.ServerRoomMusicStub(chan)
+        channel = grpc.insecure_channel(self.room_address)
+        self.room_stub = ServerRoomMusic_pb2_grpc.ServerRoomMusicStub(channel)
+        grpc.channel_ready_future(channel).result(timeout=1)
+        print(f"Client connected to {self.room_name} at {self.room_address}")
 
         join = self.room_stub.JoinRoom(
             ServerRoomMusic_pb2.JoinRoomRequest(
                 username=self.username,
-                ClientAddress=self.client_address
+                ClientMusicAddress=self.client_address
             )
         )
-        if join.status != ServerRoomMusic_pb2.Status.SUCCESS:
+        if not join.success:
             QMessageBox.critical(self, "Join Failed", "Refused by server.")
             return
-
-        tchan = grpc.insecure_channel(join.RoomTimeAddress, options=_GRPC_OPTIONS)
-        grpc.channel_ready_future(tchan).result(timeout=5)
-        offsets, delays = TimeSync(
-            ServerRoomTime_pb2_grpc.ServerRoomTimeStub(tchan),
-            np.array([]), np.array([]), repeats=5
-        )
-        self.room_stub.SyncStat(
-            ServerRoomMusic_pb2.SyncStatRequest(
-                username=self.username,
-                delay=float(delays.mean())
-            )
-        )
 
     def init_ui(self):
         self.setWindowTitle(f"Room: {self.room_name}")
         self.setGeometry(150, 150, 900, 600)
         cen = QWidget(self); self.setCentralWidget(cen)
         hbox = QHBoxLayout()
-
-        # Left
+        # Left panel
         lv = QVBoxLayout()
         lv.addWidget(QLabel("Users In Room"))
         self.users_list = QListWidget(); lv.addWidget(self.users_list, stretch=1)
-        leave_btn = QPushButton("Leave Room"); leave_btn.clicked.connect(self.on_leave); lv.addWidget(leave_btn)
-
-        # Middle
+        leave = QPushButton("Leave Room"); leave.clicked.connect(self.on_leave); lv.addWidget(leave)
+        # Middle panel
         mv = QVBoxLayout(); mv.addStretch()
         play = QPushButton("Play"); play.clicked.connect(self.on_play); mv.addWidget(play)
         pause= QPushButton("Pause"); pause.clicked.connect(self.on_pause); mv.addWidget(pause)
         skip = QPushButton("Skip Song"); skip.clicked.connect(self.on_skip_song); mv.addWidget(skip)
-
-        # Right
+        # Right panel
         rv = QVBoxLayout()
         rv.addWidget(QLabel("Song Queue"))
         self.queue_list = QListWidget(); rv.addWidget(self.queue_list, stretch=1)
         upl = QPushButton("Upload Song mp3"); upl.clicked.connect(self.on_upload); rv.addWidget(upl)
-
+        # separators
         line1 = QFrame(); line1.setFrameShape(QFrame.VLine); line1.setFrameShadow(QFrame.Sunken)
         line2 = QFrame(); line2.setFrameShape(QFrame.VLine); line2.setFrameShadow(QFrame.Sunken)
-
         hbox.addLayout(lv); hbox.addWidget(line1)
         hbox.addLayout(mv); hbox.addWidget(line2)
         hbox.addLayout(rv)
         cen.setLayout(hbox)
-
-        self._poll_timer = QTimer(self)
-        self._poll_timer.timeout.connect(self.refresh_room)
-        self._poll_timer.start(2000)
+        self.timer = QTimer(self); self.timer.timeout.connect(self.refresh_room); self.timer.start(2000)
 
     def on_play(self):
         try:
             resp = self.room_stub.StartSong(ServerRoomMusic_pb2.StartSongRequest())
-            if resp.status != ServerRoomMusic_pb2.Status.SUCCESS:
-                raise grpc.RpcError(f"StartSong returned {resp.status}")
+            if not resp.success:
+                QMessageBox.information(self, "Sorry!", f"Can't Start Song Right Now!")
         except grpc.RpcError as e:
             QMessageBox.critical(self, "Error", f"StartSong RPC failed:\n{e}")
 
     def on_pause(self):
         try:
-            resp = self.room_stub.PauseSong(ServerRoomMusic_pb2.PauseSongRequest())
-            if resp.status != ServerRoomMusic_pb2.Status.SUCCESS:
-                raise grpc.RpcError(f"PauseSong returned {resp.status}")
+            resp = self.room_stub.StopSong(ServerRoomMusic_pb2.StopSongRequest())
+            if not resp.success:
+                QMessageBox.information(self, "Sorry!", f"Can't Stop Song Right Now!")
         except grpc.RpcError as e:
             QMessageBox.critical(self, "Error", f"PauseSong RPC failed:\n{e}")
 
     def on_skip_song(self):
         try:
-            resp = self.room_stub.DeleteSong(ServerRoomMusic_pb2.DeleteSongRequest())
-            if resp.status != ServerRoomMusic_pb2.Status.SUCCESS:
-                raise grpc.RpcError(f"DeleteSong returned {resp.status}")
+            resp = self.room_stub.SkipSong(ServerRoomMusic_pb2.SkipSongRequest())
+            if not resp.success:
+                QMessageBox.information(self, "Sorry!", f"Can't Skip Song Right Now!")
         except grpc.RpcError as e:
             QMessageBox.critical(self, "Error", f"DeleteSong RPC failed:\n{e}")
 
     def on_upload(self):
         dl = QStandardPaths.writableLocation(QStandardPaths.DownloadLocation)
         path, _ = QFileDialog.getOpenFileName(self, "Select MP3", dl, "MP3 Files (*.mp3)")
-        if not path:
-            return
+        if not path: return
         data = open(path, "rb").read()
         try:
+            name = os.path.basename(path)
             resp = self.room_stub.AddSong(
                 ServerRoomMusic_pb2.AddSongRequest(
-                    filename=os.path.basename(path),
-                    audio_data=data
+                    name=name,
+                    AudioData=data
                 )
             )
-            if resp.status != ServerRoomMusic_pb2.Status.SUCCESS:
-                raise grpc.RpcError(f"AddSong returned {resp.status}")
-            QMessageBox.information(self, "Uploaded", f"Position {resp.queue_position}")
+            if not resp.success:
+                raise grpc.RpcError(f"Can't Add Song Right Now!")
+            QMessageBox.information(self, "Uploaded:", name)
         except grpc.RpcError as e:
             QMessageBox.critical(self, "Error", f"AddSong RPC failed:\n{e}")
 
@@ -435,55 +332,65 @@ class RoomWindow(QMainWindow):
             return
         try:
             resp = self.room_stub.CurrentState(ServerRoomMusic_pb2.CurrentStateRequest())
+
+            # Users
             self.users_list.clear()
             for u in resp.usernames:
                 self.users_list.addItem(u)
+
+            # Queue
+            self.queue_list.clear()
+            for song_name in resp.MusicList:
+                i = song_name.find(".mp3")
+                self.queue_list.addItem(song_name[:i])
+
         except Exception as e:
-            print("Error refreshing room:", e)
+            print("Error refreshing room state:", e)
 
     def on_leave(self):
-        # Called when the "Leave Room" button is pressed
-        try:
-            self.room_stub.LeaveRoom(
-                ServerRoomMusic_pb2.LeaveRoomRequest(username=self.username)
-            )
-        except:
-            pass
-        try:
-            self.lobby_stub.LeaveRoom(
-                ServerLobby_pb2.LeaveRoomRequest(
-                    username=self.username,
-                    roomname=self.room_name
-                )
-            )
-        except:
-            pass
-        self._poll_timer.stop()
+        self.lobby_stub.LeaveRoom(ServerLobby_pb2.LeaveRoomRequest(
+                username=self.username, roomname=self.room_name
+            ))
+        self.room_stub.LeaveRoom(ServerRoomMusic_pb2.LeaveRoomRequest(username=self.username))
+        self.timer.stop()
         self.close()
         self.parent_lobby.show()
 
-    def closeEvent(self, event):
-        # Clean up if window is closed directly
-        self.on_leave()
-        event.accept()
+def run_gui(server_address, TerminateCommand):
+    while True:
+        try:
+            channel = grpc.insecure_channel(server_address)
+            lobby = ServerLobby_pb2_grpc.ServerLobbyStub(channel)
+            grpc.channel_ready_future(channel).result(timeout=1)
+            print(f"Client connected to Lobby at {server_address}")
+            break
+        except grpc.FutureTimeoutError:
+            time.sleep(0.5)
+            print("Waiting to connect to Lobby")
 
-def run_gui(server_address):
+    # Get hostname
+    hostname = socket.gethostbyname(socket.gethostname())
+
+    # Set up MusicPlayer
+    ClientPlayer = grpc.server(futures.ThreadPoolExecutor(max_workers=2),
+                         options = [('grpc.max_send_message_length', MAX_GRPC_TRANSMISSION),
+                                    ('grpc.max_receive_message_length', MAX_GRPC_TRANSMISSION)])
+    ClientPlayerAddress =  hostname + ":" + str(ClientPlayer.add_insecure_port(f"{hostname}:0"))
+
+    Thread = threading.Thread(target=ClientPlayerStart, args=(ClientPlayer, ClientPlayerAddress, TerminateCommand,))
+    Thread.start()
+
     app = QApplication(sys.argv)
-    signal.signal(signal.SIGINT, lambda sig, fr: app.quit())
+    wnd = LoginWindow(lobby, ClientPlayerAddress)
+    wnd.show()
 
-    _client_ready_evt.wait()
-    chan = grpc.insecure_channel(server_address, options=_GRPC_OPTIONS)
-    grpc.channel_ready_future(chan).result(timeout=5)
-    lobby_stub = ServerLobby_pb2_grpc.ServerLobbyStub(chan)
-
-    login = LoginWindow(lobby_stub, client_address)
-    login.show()
-    sys.exit(app.exec_())
+    return app.exec_()
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         print("Usage: python ClientGUI.py ServerHost:Port")
         sys.exit(1)
-
-    threading.Thread(target=serve_grpc, daemon=True).start()
-    run_gui(sys.argv[1])
+    
+    TerminateCommand = threading.Event()
+    run_gui(sys.argv[1], TerminateCommand)
+    TerminateCommand.set()

@@ -24,39 +24,39 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n(Server/ServerLobbyGRPC/ServerLobby.proto\x12\x0bServerLobby\"$\n\x10JoinLobbyRequest\x12\x10\n\x08username\x18\x01 \x01(\t\"8\n\x11JoinLobbyResponse\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.ServerLobby.Status\"%\n\x11LeaveLobbyRequest\x12\x10\n\x08username\x18\x01 \x01(\t\"\x14\n\x12LeaveLobbyResponse\"\x11\n\x0fGetRoomsRequest\"4\n\x10GetRoomsResponse\x12\r\n\x05rooms\x18\x01 \x03(\t\x12\x11\n\taddresses\x18\x02 \x03(\t\"5\n\x0fJoinRoomRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08roomname\x18\x02 \x01(\t\"7\n\x10JoinRoomResponse\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.ServerLobby.Status\"6\n\x10LeaveRoomRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08roomname\x18\x02 \x01(\t\"8\n\x11LeaveRoomResponse\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.ServerLobby.Status\" \n\x10StartRoomRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"Z\n\x11StartRoomResponse\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.ServerLobby.Status\x12\r\n\x05rooms\x18\x02 \x03(\t\x12\x11\n\taddresses\x18\x03 \x03(\t*8\n\x06Status\x12\x0b\n\x07PENDING\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\t\n\x05MATCH\x10\x02\x12\t\n\x05\x45RROR\x10\x03\x32\xd2\x03\n\x0bServerLobby\x12J\n\tJoinLobby\x12\x1d.ServerLobby.JoinLobbyRequest\x1a\x1e.ServerLobby.JoinLobbyResponse\x12M\n\nLeaveLobby\x12\x1e.ServerLobby.LeaveLobbyRequest\x1a\x1f.ServerLobby.LeaveLobbyResponse\x12G\n\x08GetRooms\x12\x1c.ServerLobby.GetRoomsRequest\x1a\x1d.ServerLobby.GetRoomsResponse\x12G\n\x08JoinRoom\x12\x1c.ServerLobby.JoinRoomRequest\x1a\x1d.ServerLobby.JoinRoomResponse\x12J\n\tLeaveRoom\x12\x1d.ServerLobby.LeaveRoomRequest\x1a\x1e.ServerLobby.LeaveRoomResponse\x12J\n\tStartRoom\x12\x1d.ServerLobby.StartRoomRequest\x1a\x1e.ServerLobby.StartRoomResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n(Server/ServerLobbyGRPC/ServerLobby.proto\x12\x0bServerLobby\"@\n\x10JoinLobbyRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x1a\n\x12MusicPlayerAddress\x18\x02 \x01(\t\"8\n\x11JoinLobbyResponse\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.ServerLobby.Status\"%\n\x11LeaveLobbyRequest\x12\x10\n\x08username\x18\x01 \x01(\t\"\x14\n\x12LeaveLobbyResponse\"\x11\n\x0fGetRoomsRequest\"4\n\x10GetRoomsResponse\x12\r\n\x05rooms\x18\x01 \x03(\t\x12\x11\n\taddresses\x18\x02 \x03(\t\"5\n\x0fJoinRoomRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08roomname\x18\x02 \x01(\t\"7\n\x10JoinRoomResponse\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.ServerLobby.Status\"6\n\x10LeaveRoomRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08roomname\x18\x02 \x01(\t\"8\n\x11LeaveRoomResponse\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.ServerLobby.Status\" \n\x10StartRoomRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\"Z\n\x11StartRoomResponse\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.ServerLobby.Status\x12\r\n\x05rooms\x18\x02 \x03(\t\x12\x11\n\taddresses\x18\x03 \x03(\t*8\n\x06Status\x12\x0b\n\x07PENDING\x10\x00\x12\x0b\n\x07SUCCESS\x10\x01\x12\t\n\x05MATCH\x10\x02\x12\t\n\x05\x45RROR\x10\x03\x32\xd2\x03\n\x0bServerLobby\x12J\n\tJoinLobby\x12\x1d.ServerLobby.JoinLobbyRequest\x1a\x1e.ServerLobby.JoinLobbyResponse\x12M\n\nLeaveLobby\x12\x1e.ServerLobby.LeaveLobbyRequest\x1a\x1f.ServerLobby.LeaveLobbyResponse\x12G\n\x08GetRooms\x12\x1c.ServerLobby.GetRoomsRequest\x1a\x1d.ServerLobby.GetRoomsResponse\x12G\n\x08JoinRoom\x12\x1c.ServerLobby.JoinRoomRequest\x1a\x1d.ServerLobby.JoinRoomResponse\x12J\n\tLeaveRoom\x12\x1d.ServerLobby.LeaveRoomRequest\x1a\x1e.ServerLobby.LeaveRoomResponse\x12J\n\tStartRoom\x12\x1d.ServerLobby.StartRoomRequest\x1a\x1e.ServerLobby.StartRoomResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'Server.ServerLobbyGRPC.ServerLobby_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_STATUS']._serialized_start=639
-  _globals['_STATUS']._serialized_end=695
+  _globals['_STATUS']._serialized_start=667
+  _globals['_STATUS']._serialized_end=723
   _globals['_JOINLOBBYREQUEST']._serialized_start=57
-  _globals['_JOINLOBBYREQUEST']._serialized_end=93
-  _globals['_JOINLOBBYRESPONSE']._serialized_start=95
-  _globals['_JOINLOBBYRESPONSE']._serialized_end=151
-  _globals['_LEAVELOBBYREQUEST']._serialized_start=153
-  _globals['_LEAVELOBBYREQUEST']._serialized_end=190
-  _globals['_LEAVELOBBYRESPONSE']._serialized_start=192
-  _globals['_LEAVELOBBYRESPONSE']._serialized_end=212
-  _globals['_GETROOMSREQUEST']._serialized_start=214
-  _globals['_GETROOMSREQUEST']._serialized_end=231
-  _globals['_GETROOMSRESPONSE']._serialized_start=233
-  _globals['_GETROOMSRESPONSE']._serialized_end=285
-  _globals['_JOINROOMREQUEST']._serialized_start=287
-  _globals['_JOINROOMREQUEST']._serialized_end=340
-  _globals['_JOINROOMRESPONSE']._serialized_start=342
-  _globals['_JOINROOMRESPONSE']._serialized_end=397
-  _globals['_LEAVEROOMREQUEST']._serialized_start=399
-  _globals['_LEAVEROOMREQUEST']._serialized_end=453
-  _globals['_LEAVEROOMRESPONSE']._serialized_start=455
-  _globals['_LEAVEROOMRESPONSE']._serialized_end=511
-  _globals['_STARTROOMREQUEST']._serialized_start=513
-  _globals['_STARTROOMREQUEST']._serialized_end=545
-  _globals['_STARTROOMRESPONSE']._serialized_start=547
-  _globals['_STARTROOMRESPONSE']._serialized_end=637
-  _globals['_SERVERLOBBY']._serialized_start=698
-  _globals['_SERVERLOBBY']._serialized_end=1164
+  _globals['_JOINLOBBYREQUEST']._serialized_end=121
+  _globals['_JOINLOBBYRESPONSE']._serialized_start=123
+  _globals['_JOINLOBBYRESPONSE']._serialized_end=179
+  _globals['_LEAVELOBBYREQUEST']._serialized_start=181
+  _globals['_LEAVELOBBYREQUEST']._serialized_end=218
+  _globals['_LEAVELOBBYRESPONSE']._serialized_start=220
+  _globals['_LEAVELOBBYRESPONSE']._serialized_end=240
+  _globals['_GETROOMSREQUEST']._serialized_start=242
+  _globals['_GETROOMSREQUEST']._serialized_end=259
+  _globals['_GETROOMSRESPONSE']._serialized_start=261
+  _globals['_GETROOMSRESPONSE']._serialized_end=313
+  _globals['_JOINROOMREQUEST']._serialized_start=315
+  _globals['_JOINROOMREQUEST']._serialized_end=368
+  _globals['_JOINROOMRESPONSE']._serialized_start=370
+  _globals['_JOINROOMRESPONSE']._serialized_end=425
+  _globals['_LEAVEROOMREQUEST']._serialized_start=427
+  _globals['_LEAVEROOMREQUEST']._serialized_end=481
+  _globals['_LEAVEROOMRESPONSE']._serialized_start=483
+  _globals['_LEAVEROOMRESPONSE']._serialized_end=539
+  _globals['_STARTROOMREQUEST']._serialized_start=541
+  _globals['_STARTROOMREQUEST']._serialized_end=573
+  _globals['_STARTROOMRESPONSE']._serialized_start=575
+  _globals['_STARTROOMRESPONSE']._serialized_end=665
+  _globals['_SERVERLOBBY']._serialized_start=726
+  _globals['_SERVERLOBBY']._serialized_end=1192
 # @@protoc_insertion_point(module_scope)

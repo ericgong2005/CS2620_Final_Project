@@ -16,11 +16,30 @@ from Server.ServerConstants import ROOM_TIMEOUT
 
 class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
     def __init__(self):
-        self.users = {} # Contains username to (room, last update time)
+        self.users = {} # Contains username to (room, last update time, stub)
         self.rooms = {} # Contains room name to (address, count, last update time, stub)
 
     def GetRoomValue(self, index):
         return [item[index] for item in self.rooms.values()]
+    
+    def CheckUsers(self):
+        CurrentTime = int(time.time())
+        for key in list(self.users.keys()):
+            if CurrentTime - self.rooms[key][1] > ROOM_TIMEOUT:
+                print(f"User {key} has timed out. Heartbeat")
+                try:
+                    self.users[key][2].Heartbeat(Client_pb2.HeartbeatRequest())
+                    self.users[key] = (self.users[key][0], int(time.time()), self.users[key][2])
+                    continue
+                except grpc._channel._InactiveRpcError:
+                    pass
+
+                if self.users[key][1] != "Lobby":
+                    try:
+                        self.rooms[self.users[key][1]][3].LeaveRoom(ServerRoomMusic_pb2.LeaveRoomRequest(username=key))
+                    except Exception as e:
+                        print("While deleting user", e)
+                del self.users[key]
     
     def CheckRooms(self):
         CurrentTime = int(time.time())
@@ -34,9 +53,10 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
                                            self.rooms[key][1],
                                            int(time.time()),
                                            self.rooms[key][3])
-                        print(f"{key} is confirmed active")
+                        print(f"{key} is confirmed active with users", response.usernames)
                         continue
                     self.rooms[key][3].KillRoom(ServerRoomMusic_pb2.KillRoomRequest())
+                    print(f"Killed {key}")
                 except grpc._channel._InactiveRpcError:
                     pass
                 del self.rooms[key]
@@ -44,9 +64,24 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
     # Join the lobby
     def JoinLobby(self, request, context):
         print(f"JoinLobby Request with username {request.username}")
+        # self.CheckUsers()
+
         if request.username in self.users:
+            print("Duplicate User Rejected:", request.username)
             return ServerLobby_pb2.JoinLobbyResponse(status=ServerLobby_pb2.Status.MATCH)
-        self.users[request.username] = ("Lobby", int(time.time()))
+        
+        UserStub = None
+        try:
+            channel = grpc.insecure_channel(request.MusicPlayerAddress)
+            UserStub = Client_pb2_grpc.ClientStub(channel)
+            grpc.channel_ready_future(channel).result(timeout=1)
+            print(f"Lobby connected to User {request.username} at {request.MusicPlayerAddress}")
+        except Exception as e:
+            print(f"Failed to connect to {request.username}: {e}")
+            return ServerLobby_pb2.JoinLobbyResponse(status=ServerLobby_pb2.Status.ERROR)
+        
+        self.users[request.username] = ("Lobby", int(time.time()), UserStub)
+        print("User added:", request.username)
         return ServerLobby_pb2.JoinLobbyResponse(status=ServerLobby_pb2.Status.SUCCESS)
     
     # Leave the lobby
@@ -68,7 +103,7 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
         
         if request.roomname not in self.rooms:
             return ServerLobby_pb2.JoinRoomResponse(status=ServerLobby_pb2.Status.ERROR)
-        self.users[request.username] = (request.roomname, int(time.time()))
+        self.users[request.username] = (request.roomname, int(time.time()), self.users[request.username][2])
         self.rooms[request.roomname] = (self.rooms[request.roomname][0], 
                                         self.rooms[request.roomname][1] + 1,
                                         int(time.time()),
@@ -77,7 +112,7 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
 
     # Inform you left a room
     def LeaveRoom(self, request, context):
-        self.users[request.username] = ("Lobby", int(time.time()))
+        self.users[request.username] = ("Lobby", int(time.time()), self.users[request.username][2])
         if request.roomname in self.rooms:
             self.rooms[request.roomname] = (self.rooms[request.roomname][0], 
                                         (self.rooms[request.roomname][1] - 1 if self.rooms[request.roomname][1] - 1 > 0 else 0),
