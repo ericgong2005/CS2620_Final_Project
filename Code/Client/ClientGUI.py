@@ -24,7 +24,7 @@ from Server.ServerRoomGRPC import (
     ServerRoomMusic_pb2, ServerRoomMusic_pb2_grpc,
     ServerRoomTime_pb2, ServerRoomTime_pb2_grpc
 )
-from Server.ServerConstants import MAX_GRPC_TRANSMISSION
+from Server.ServerConstants import MAX_GRPC_OPTION
 
 
 #Shutdown Handler
@@ -257,7 +257,7 @@ class RoomWindow(QMainWindow):
         self.refresh_room()
 
     def init_room_connection(self):
-        channel = grpc.insecure_channel(self.room_address)
+        channel = grpc.insecure_channel(self.room_address, options = MAX_GRPC_OPTION)
         self.room_stub = ServerRoomMusic_pb2_grpc.ServerRoomMusicStub(channel)
         grpc.channel_ready_future(channel).result(timeout=1)
         print(f"Client connected to {self.room_name} at {self.room_address}")
@@ -389,9 +389,7 @@ def run_gui(server_address, TerminateCommand):
     hostname = socket.gethostbyname(socket.gethostname())
 
     # Set up MusicPlayer
-    ClientPlayer = grpc.server(futures.ThreadPoolExecutor(max_workers=2),
-                         options = [('grpc.max_send_message_length', MAX_GRPC_TRANSMISSION),
-                                    ('grpc.max_receive_message_length', MAX_GRPC_TRANSMISSION)])
+    ClientPlayer = grpc.server(futures.ThreadPoolExecutor(max_workers=2),options = MAX_GRPC_OPTION)
     ClientPlayerAddress =  hostname + ":" + str(ClientPlayer.add_insecure_port(f"{hostname}:0"))
 
     Thread = threading.Thread(target=ClientPlayerStart, args=(ClientPlayer, ClientPlayerAddress, TerminateCommand,))

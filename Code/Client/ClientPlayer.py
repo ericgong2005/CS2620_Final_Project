@@ -17,7 +17,7 @@ from Server.ServerLobbyGRPC import ServerLobby_pb2, ServerLobby_pb2_grpc
 from Server.ServerRoomGRPC import (ServerRoomMusic_pb2, ServerRoomMusic_pb2_grpc, 
                             ServerRoomTime_pb2, ServerRoomTime_pb2_grpc)
 
-from Server.ServerConstants import (WAIT, OFFSET_VARIANCE, OFFSET_COUNTS, DELAY_COUNTS, MAX_GRPC_TRANSMISSION, CLIENT_WORKERS)
+from Server.ServerConstants import (WAIT, OFFSET_VARIANCE, OFFSET_COUNTS, DELAY_COUNTS, MAX_GRPC_OPTION, CLIENT_WORKERS)
 
 class Command(IntEnum):
     LEAVE = 0
@@ -181,11 +181,13 @@ def ClientPlayerStart(ClientPlayer, PlayerAddress, Terminate):
         except queue.Empty:
             continue
 
-        if request[0] == Command.LOAD:
+        if request[0] == Command.LOAD and request[3] not in Songs:
             media  = VLCInstance.media_new_path(os.path.abspath(request[3]))
+            media.add_option(':start-paused')  
             player = VLCInstance.media_player_new()
             player.set_media(media)
             Songs[request[2]] = player
+            player.play()
         
         if request[0] == Command.START:
             try:
@@ -235,9 +237,7 @@ def ClientPlayerStart(ClientPlayer, PlayerAddress, Terminate):
 
 if __name__ == '__main__':
     hostname = socket.gethostbyname(socket.gethostname())
-    ClientPlayer = grpc.server(futures.ThreadPoolExecutor(max_workers=CLIENT_WORKERS),
-                         options = [('grpc.max_send_message_length', MAX_GRPC_TRANSMISSION),
-                                    ('grpc.max_receive_message_length', MAX_GRPC_TRANSMISSION)])
+    ClientPlayer = grpc.server(futures.ThreadPoolExecutor(max_workers=CLIENT_WORKERS),options = MAX_GRPC_OPTION)
     ClientPlayerAddress =  hostname + ":" + str(ClientPlayer.add_insecure_port(f"{hostname}:0"))
 
     TerminateCommand = threading.Event()

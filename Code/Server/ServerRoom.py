@@ -15,7 +15,7 @@ from Server.ServerRoomGRPC import (ServerRoomMusic_pb2, ServerRoomMusic_pb2_grpc
 
 from Server.ServerConstants import (MAX_TOLERANT_DELAY, WAIT_MULTIPLIER, 
                                     MAX_DISTRIBUTION_TIME, CONSTANT_PROCCESS_TIME, 
-                                    MAX_GRPC_TRANSMISSION, MAX_SONG_QUEUE, 
+                                    MAX_GRPC_OPTION, MAX_SONG_QUEUE, 
                                     REACTION_TIME, SONG_QUEUE_UPDATE, ROOM_WORKERS)
 
 class Command(IntEnum):
@@ -130,15 +130,15 @@ class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
     
     # Ping all users
     def Ping(self):
-        print("Pinging all Users")
+        # print("Pinging all Users")
         
         for user in self.users.keys():
             try:
                 self.users[user].Heartbeat(Client_pb2.HeartbeatRequest())
             except grpc._channel._InactiveRpcError:
                 self.inactive.put(user)
-                print("Missed", user)
-        print("Room Ping to", list(self.users.keys()))
+                print("Ping Missed", user)
+        #print("Room Ping to", list(self.users.keys()))
     
     # Remove Inactive Users
     def RemoveInactive(self):
@@ -161,7 +161,7 @@ class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
         # Establish stub to user
         UserStub = None
         try:
-            channel = grpc.insecure_channel(request.ClientMusicAddress)
+            channel = grpc.insecure_channel(request.ClientMusicAddress, options = MAX_GRPC_OPTION)
             UserStub = Client_pb2_grpc.ClientStub(channel)
             grpc.channel_ready_future(channel).result(timeout=1)
             print(f"Room connected to User {request.username} at {request.ClientMusicAddress}")
@@ -194,7 +194,6 @@ class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
             
             print("Sending Current Song", name, AudioData)
             if name != None:
-                UserStub.AddSong(Client_pb2.AddSongRequest(name=name, AudioData=AudioData))
                 try:
                     UserStub.AddSong(Client_pb2.AddSongRequest(name=name, AudioData=AudioData))
                 except grpc._channel._InactiveRpcError:
@@ -202,11 +201,12 @@ class ServerRoomMusicServicer(ServerRoomMusic_pb2_grpc.ServerRoomMusicServicer):
             
             print("Sending Remaining Songs")
             for song in SongList:
-                UserStub.AddSong(Client_pb2.AddSongRequest(name=song[0], AudioData=song[1]))
                 try:
                     UserStub.AddSong(Client_pb2.AddSongRequest(name=song[0], AudioData=song[1]))
                 except grpc._channel._InactiveRpcError:
                     return ServerRoomMusic_pb2.JoinRoomResponse(success=False, RoomTimeAddress=self.TimeAddress)
+                
+        
         
         print(request.username, "has successfully joined", self.name)
         return ServerRoomMusic_pb2.JoinRoomResponse(success=True, RoomTimeAddress=self.TimeAddress)
@@ -325,9 +325,7 @@ def startServerRoom(LobbyQueue, Name):
     print(f"ServerRoomTime started on {TimeAddress}")
 
     # Start ServerRoomMusic gRPC server.
-    ServerRoomMusic = grpc.server(futures.ThreadPoolExecutor(max_workers=ROOM_WORKERS),
-                                  options = [('grpc.max_send_message_length', MAX_GRPC_TRANSMISSION),
-                                    ('grpc.max_receive_message_length', MAX_GRPC_TRANSMISSION)])
+    ServerRoomMusic = grpc.server(futures.ThreadPoolExecutor(max_workers=ROOM_WORKERS), options = MAX_GRPC_OPTION)
     RoomAddress = hostname + ":" + str(ServerRoomMusic.add_insecure_port(f"{hostname}:0"))
     ServerRoomMusic_pb2_grpc.add_ServerRoomMusicServicer_to_server(ServerRoomMusicServicer(TimeAddress, RoomAddress, Name, Terminate), ServerRoomMusic)
     ServerRoomMusic.start()

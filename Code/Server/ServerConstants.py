@@ -3,6 +3,8 @@ ROOM_TIMEOUT = 1
 
 # Maximum size for grpc
 MAX_GRPC_TRANSMISSION = 200 * 1024 * 1024 # 200 MB
+MAX_GRPC_OPTION = [('grpc.max_send_message_length', MAX_GRPC_TRANSMISSION),
+                   ('grpc.max_receive_message_length', MAX_GRPC_TRANSMISSION)]
 
 # TimeSync Parameters
 WAIT = 0.1

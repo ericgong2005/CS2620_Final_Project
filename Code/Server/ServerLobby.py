@@ -12,7 +12,7 @@ from Server.ServerRoomGRPC import (ServerRoomMusic_pb2, ServerRoomMusic_pb2_grpc
 
 from Server.ServerRoom import startServerRoom
 
-from Server.ServerConstants import ROOM_TIMEOUT
+from Server.ServerConstants import MAX_GRPC_OPTION
 
 class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
     def __init__(self):
@@ -60,7 +60,7 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
         
         UserStub = None
         try:
-            channel = grpc.insecure_channel(request.MusicPlayerAddress)
+            channel = grpc.insecure_channel(request.MusicPlayerAddress, options = MAX_GRPC_OPTION)
             UserStub = Client_pb2_grpc.ClientStub(channel)
             grpc.channel_ready_future(channel).result(timeout=1)
             print(f"Lobby connected to User {request.username} at {request.MusicPlayerAddress}")
@@ -129,7 +129,7 @@ class ServerLobbyServicer(ServerLobby_pb2_grpc.ServerLobbyServicer):
         # Connect to ServerRoom
         RoomStub = None
         try:
-            channel = grpc.insecure_channel(RoomMusicAddress)
+            channel = grpc.insecure_channel(RoomMusicAddress, options = MAX_GRPC_OPTION)
             RoomStub = ServerRoomMusic_pb2_grpc.ServerRoomMusicStub(channel)
             grpc.channel_ready_future(channel).result(timeout=1)
             print(f"Lobby connected to {name} at {RoomMusicAddress}")
