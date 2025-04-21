@@ -8,3 +8,13 @@ Usage: All code can be run from the Code directory using commands from the Makef
 
 
  You must use `brew install --cask vlc` to install the vlc media player
+ 
+ You must also create a virtual environment using the command
+ ```
+ $ python -m venv .venv
+ ```
+
+and then pip install the requirements using
+```
+$ pip install requirements.txt
+```
