@@ -14,7 +14,17 @@ Usage: All code can be run from the Code directory using commands from the Makef
  $ python -m venv .venv
  ```
 
+Then activate the virtual environment using
+```
+$ source .venv/bin/activate
+```
+
 and then pip install the requirements using
 ```
-$ pip install requirements.txt
+$ pip install -r requirements.txt
+```
+
+and to deactivate use
+```
+$ deactivate
 ```
